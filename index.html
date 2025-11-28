@@ -188,7 +188,7 @@ function checkTimer(){
         startTimer();
     } else {
         adBtn.disabled = false;
-        adBtn.innerText = "Reklama Ko‘rsatish";
+        adBtn.innerText = "launch rocket miner";
     }
 }
 
@@ -201,7 +201,7 @@ function startTimer(){
         if(remainingTime<=0){
             clearInterval(interval);
             adBtn.disabled=false;
-            adBtn.innerText="Reklama Ko‘rsatish";
+            adBtn.innerText="launch rocket miner";
         }
         remainingTime--;
     },1000);
