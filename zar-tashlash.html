@@ -173,11 +173,11 @@
         
         <div class="dice-display">
             <div class="player1-roll">
-                <p>Siz (P1):</p>
+                <p>Siz:</p>
                 <div class="dice-result" id="my-roll">-</div>
             </div>
             <div class="player2-roll">
-                <p>Raqib (P2):</p>
+                <p>Raqib:</p>
                 <div class="dice-result" id="opponent-roll">-</div>
             </div>
         </div>
@@ -335,15 +335,19 @@ window.joinGame = function(gameId, betAmount) {
                 alert("O'yinga muvaffaqiyatli qo'shildingiz! Zar tashlashingiz mumkin.");
                 updateUIForGame(currentGameId);
             } else {
-                 // Pul yechib olingan, lekin o'yinga qo'shilish bekor bo'lgan.
-                 // PULNI QAYTARISH KERAK. Bu yerda murakkabroq tranzaksiya mantiqi talab qilinadi.
-                 // Eng sodda usul: YECHILGAN PULNI DARHOL QAYTARIB BERISH
+                 // **TUZATILGAN MANTIQ:** Pulni qaytarish (o'yin boshlangan bo'lsa)
                  runTransaction(ref(db, "users/" + deviceId + "/balance"), (currentBalance) => {
-                    return (currentBalance || 0) + betAmount;
+                    return (currentBalance || 0) + betAmount; 
                  }).then(() => {
-                    alert("Kechirasiz, o'yin allaqachon boshlangan. Tikkan pulingiz qaytarildi.");
+                    alert("Kechirasiz, o'yin allaqachon boshlangan. Tikkan pulingiz avtomatik qaytarildi.");
                  });
             }
+        }).catch(error => {
+            console.error("O'yinga qo'shilishda ichki tranzaksiya xatolik:", error);
+            // Xatolik yuz bersa ham, pulni qaytarib berishga urinish
+            runTransaction(ref(db, "users/" + deviceId + "/balance"), (currentBalance) => {
+                return (currentBalance || 0) + betAmount; 
+            });
         });
     }).catch(error => {
         console.error("O'yinga qo'shilish tranzaksiyasida xatolik:", error);
@@ -356,6 +360,7 @@ window.rollDice = function() {
 
     if (!currentGameId || !playerRole) return;
     
+    // Tugmani bir marta bosgandan keyin o'chirish
     document.getElementById('roll-btn').disabled = true;
 
     // Faqat o'yinchining tegishli maydonini yangilash
@@ -450,8 +455,11 @@ function setupGameListener(gameId) {
 
         // Ma'lumotlarni yangilash
         document.getElementById('game-title').innerText = `O'yin ID: ${gameId} (Tikish: ${gameData.bet_amount} so'm)`;
-        document.getElementById('my-roll').innerText = gameData[playerRole + '_roll'] || '-';
-        document.getElementById('opponent-roll').innerText = gameData[(playerRole === 'player1' ? 'player2' : 'player1') + '_roll'] || '-';
+        // O'z rolimizga mos ma'lumotni ko'rsatish
+        document.getElementById('my-roll').innerText = gameData[playerRole + '_roll'] !== null ? gameData[playerRole + '_roll'] : '-'; 
+        // Raqib roliga mos ma'lumotni ko'rsatish
+        const opponentRole = playerRole === 'player1' ? 'player2' : 'player1';
+        document.getElementById('opponent-roll').innerText = gameData[opponentRole + '_roll'] !== null ? gameData[opponentRole + '_roll'] : '-';
 
         // O'yin statusini boshqarish
         const rollBtn = document.getElementById('roll-btn');
@@ -462,13 +470,19 @@ function setupGameListener(gameId) {
             rollBtn.disabled = true;
             rollBtn.innerText = "Zar Tashlash!";
         } else if (gameData.status === 'active') {
-            gameStatusEl.innerText = "Zar tashlashingiz mumkin!";
-            
-            // Faqat o'zimiz zar tashlamagan bo'lsak, tugmani yoqish
-            if (gameData[playerRole + '_roll'] === null) {
-                rollBtn.disabled = false;
-            } else {
+            const myRoll = gameData[playerRole + '_roll'];
+            const opponentRoll = gameData[opponentRole + '_roll']; // Yuqorida aniqlangan
+
+            // Tugmani yoqish mantiqi: Faqat o'zimiz hali zar tashlamagan bo'lsak, yoqiladi.
+            if (myRoll === null) {
+                gameStatusEl.innerText = "Sizning navbating! Zar tashlash tugmasini bosing.";
+                rollBtn.disabled = false; // Tugmani yoqish
+            } else if (opponentRoll === null) {
                 gameStatusEl.innerText = "Raqibingizning zar tashlashini kuting...";
+                rollBtn.disabled = true; // Tugmani o'chirish
+            } else {
+                // Ikkala o'yinchi ham zar tashlagan (processGameResult ishlashi kerak)
+                gameStatusEl.innerText = "Natija aniqlanmoqda...";
                 rollBtn.disabled = true;
             }
             
@@ -479,7 +493,7 @@ function setupGameListener(gameId) {
             rollBtn.disabled = true;
             rollBtn.innerText = "Tugadi";
             
-            // Yakuniy natija xabari (Agar processGameResult buni o'rnatmagan bo'lsa)
+            // Yakuniy natija xabari
             if (!gameStatusEl.innerText.includes("G'olib")) {
                  gameStatusEl.innerText = `O'yin yakunlandi. G'olib ID: ${gameData.winner_id}`;
             }
@@ -489,13 +503,21 @@ function setupGameListener(gameId) {
 
 // === UI BOSHQARUVI ===
 function updateUIForGame(gameId) {
+    if (!gameId) {
+        alert("O'yin identifikatori topilmadi!");
+        return;
+    }
+
+    // O'yin xonalarini ko'rsatishni to'xtatish
+    off(ref(db, 'games')); 
+    
     document.getElementById('game-controls').style.display = 'none';
     document.getElementById('active-games').style.display = 'none';
     document.getElementById('game-area').style.display = 'block';
     
-    // O'yin eshituvchisini ishga tushirish
     setupGameListener(gameId);
 }
+
 
 // === O'YINDAN CHIQISH (Asosan UI ni tozalash) ===
 window.exitGame = function(shouldAlert = true) {
