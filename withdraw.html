@@ -133,7 +133,7 @@
                     set(ref(db, "users/"+deviceId), {...userData, balance: newBalance}) 
                     .then(() => {
                         // Xabarda valyuta o'zgartirildi: (so'm)
-                        alert(`So'rov muvaffaqiyatli yuborildi: ${amount.toFixed(2)} so'm Payeer ${payeer} raqamiga. Balansingiz yangilandi.`);
+                        alert(`So'rov muvaffaqiyatli yuborildi: ${amount.toFixed(2)} so'm karta ${payeer} raqamiga. Balansingiz yangilandi.`);
                         // Yuborilgandan so'ng maydonlarni tozalash
                         document.getElementById("payeer").value = "";
                         document.getElementById("amount").value = "";
