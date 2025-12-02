@@ -249,13 +249,21 @@ function renderPrizes(prizes) {
     const listEl = document.getElementById("prize-list");
     listEl.innerHTML = '';
     
-    // prizeKeys 0-dan boshlanganligi uchun index+1 Top N bo'ladi
-    Object.keys(prizes).forEach((key, index) => {
+    // MUAMMO HAL QILINDI: Sovrin kalitlarini raqam bo'yicha saralash
+    const sortedKeys = Object.keys(prizes).sort((a, b) => {
+        // 'top_1' dan 1 raqamini ajratib olish
+        const numA = parseInt(a.split('_')[1]); 
+        const numB = parseInt(b.split('_')[1]);
+        return numA - numB; // O'sish tartibida saralash (1, 2, 3...)
+    });
+    
+    sortedKeys.forEach((key) => {
         const prizeAmount = prizes[key];
         const li = document.createElement('li');
         li.className = 'prize-item';
-        // ₽ o'rniga so'm ishlatildi
-        li.innerText = `Top ${index + 1}: ${prizeAmount} so'm`;
+        // key ('top_1', 'top_2'...) dan to'g'ri tartib raqamini olish
+        const rank = parseInt(key.split('_')[1]); 
+        li.innerText = `Top ${rank}: ${prizeAmount} so'm`;
         listEl.appendChild(li);
     });
 }
