@@ -605,7 +605,6 @@ function initApp() {
     // REFERRAL MANTIQI: Telegram TWA dan start_param ni olish va uni global qilish
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
         const startParam = window.Telegram.WebApp.initDataUnsafe.start_param;
-        // Agar startParam mavjud bo'lsa va u hozirgi foydalanuvchining ID si bo'lmasa, uni saqlaymiz
         if (startParam && startParam !== deviceId) {
             referrerId = startParam; 
             console.log("Referrer ID topildi:", referrerId);
@@ -623,33 +622,24 @@ function initApp() {
             if(data.shield !== undefined) shield = data.shield;
             
             // Agar foydalanuvchining referrerId ma'lumoti mavjud bo'lsa, uni ham saqlash
-            // Faqat bir marta o'rnatish uchun: agar data.referrerId mavjud bo'lmasa va URL'dan olingan bo'lsa
-            if(!data.referrerId && referrerId) {
-                // Yangi topilgan referrerId'ni Firebase'ga saqlash
-                update(ref(db, "users/" + deviceId), { referrerId: referrerId });
-            } else if (data.referrerId) {
-                 // Agar Firebase'da mavjud bo'lsa, uni ishlatish
-                 referrerId = data.referrerId;
-            }
+            if(data.referrerId !== undefined) referrerId = data.referrerId;
             
             // === O'ZGARTIRILGAN QATOR ===
             document.getElementById("balance").innerText = balance.toFixed(2)+" so'm";
             // =============================
             updateStatus();
             
-            // Mining jarayonini davom ettirish yoki tugatish mantiqi
+            // Agar mining jarayoni tugallanmagan bo'lsa, davom ettirish
             if(data.isMining && data.lastLaunchTime){
                 const now = Date.now();
                 const timeSinceLastLaunch = Math.floor((now - data.lastLaunchTime) / 1000); // Sekunddagi farq
                 
                 // Ilovaga kirguncha o'tgan haqiqiy mining vaqti:
                 // Resurslar tugashini hisobga olgan holda maksimal vaqt.
-                // Qalqon va Yoqilg'i qanchada tugashini sekundda hisoblash
                 const maxDurationByFuel = fuel / DECREMENT_RATE;
                 const maxDurationByShield = shield / DECREMENT_RATE;
                 
                 // O'tgan samarali mining vaqti
-                // O'tgan vaqt, Yoqilg'i tugash vaqti va Qalqon tugash vaqtining eng kichigini olish
                 const effectiveMiningTime = Math.min(timeSinceLastLaunch, maxDurationByFuel, maxDurationByShield);
                 
                 // Balans va foizlarni hisoblash
@@ -661,31 +651,28 @@ function initApp() {
                     fuel = Math.max(0, fuel - decrementAmount);
                     shield = Math.max(0, shield - decrementAmount);
 
-                    // YANGI MANTIQ QO'SHILDI: REFERRAL BONUSINI ASOSIY FOYDALANUVCHIGA HAM HISOBLASH
-                    if (referrerId) {
+                    // REFERRAL BONUSINI BIR YO'LIGA HISOBLASH (Siz yo'qligingizda ishlangan pul)
+                    if (data.referrerId) {
                          const totalReferrerBonus = effectiveMiningTime * REWARD_PER_SECOND * 0.02; // 2%
                          
-                         // REFERRER balansini yangilash
-                         get(child(dbRef, "users/" + referrerId)).then(refSnapshot => {
+                         // REFERRER balansini faqat shu yerda, foydalanuvchi appni ochganda yangilaymiz.
+                         get(child(dbRef, "users/" + data.referrerId)).then(refSnapshot => {
                              if (refSnapshot.exists()) {
                                  const refData = refSnapshot.val();
-                                 // Referral bonusini o'ziga xos maydonga qo'shish
+                                 const newRefBalance = (refData.balance || 0) + totalReferrerBonus;
                                  const newRefBonus = (refData.referral_bonus || 0) + totalReferrerBonus;
                                  
-                                 update(ref(db, "users/" + referrerId), { 
-                                     // O'tgan vaqtdagi bonusni asosiy balansga qo'shmaslik, faqat referral_bonus maydoniga qo'shish
+                                 update(ref(db, "users/" + data.referrerId), { 
+                                     balance: newRefBalance,
                                      referral_bonus: newRefBonus
                                  });
                              }
-                         }).catch(error => {
-                             console.error("Referrer bonusini yangilashda xatolik:", error);
                          });
                     }
                     
                 }
                 
                 // Qolgan vaqtni resurslarning eng past foiziga qarab hisoblash
-                // RemainingTime ni o'tgan vaqtdan keyingi holatiga qarab hisoblash
                 const lowestResourcePercent = Math.min(fuel, shield);
                 remainingTime = Math.max(0, Math.floor(lowestResourcePercent / DECREMENT_RATE)); 
                 
@@ -694,22 +681,13 @@ function initApp() {
                     // Miningni to'xtatish va Firebase'ga yakuniy holatni yozish
                     fuel = 0;
                     shield = 0;
-                    
                     // === O'ZGARTIRILGAN QATOR ===
                     document.getElementById("balance").innerText = balance.toFixed(2)+" so'm";
                     // =============================
                     updateStatus();
-                    
-                    // YANGI MANTIQ: lastLaunchTime ni ham yangilash - bu juda muhim!
-                    update(ref(db, "users/" + deviceId), { 
-                        balance: balance, 
-                        fuel: 0, 
-                        shield: 0, 
-                        isMining: false, 
-                        lastLaunchTime: Date.now() // Tugagan vaqtni yozib qo'yish
-                    });
+                    update(ref(db, "users/" + deviceId), { balance: balance, fuel: 0, shield: 0, isMining: false });
                     stopMining();
-                    console.log("Resurslar tugadi. Mining to'xtatildi va Firebase yangilandi.");
+                    console.log("Resurslar tugadi. Mining to'xtatildi.");
                 } else {
                     // Miningni davom ettirish
                     
@@ -719,24 +697,23 @@ function initApp() {
                     // =============================
                     updateStatus();
                     
-                    // YANGI MANTIQ: lastLaunchTime ni hozirgi vaqtga yangilash
-                    // Bu, keyingi kirishda faqat shu vaqtdan boshlab hisoblashni ta'minlaydi.
-                    update(ref(db, "users/" + deviceId), { 
-                        balance: balance, 
-                        fuel: fuel, 
-                        shield: shield,
-                        isMining: true,
-                        lastLaunchTime: now
-                    });
-                    
                     startTimer(); // Taymerni qolgan vaqtdan davom ettirish
                     console.log(`Davom etish: Effective Mining Time: ${effectiveMiningTime}s. Qolgan vaqt: ${remainingTime}s.`);
                 }
                 
+                // Har qanday holatda, yangi balans va foizlarni yozish
+                update(ref(db, "users/" + deviceId), { 
+                    balance: balance, 
+                    fuel: fuel, 
+                    shield: shield,
+                    isMining: remainingTime > 0 
+                });
+
+
             }
         } else {
             // Yangi foydalanuvchi bo'lsa, 0% bilan saqlash
-            const newUser_data = { fuel: 0, shield: 0, balance: 0, isMining: false, lastLaunchTime: Date.now() };
+            const newUser_data = { fuel: 0, shield: 0, balance: 0, isMining: false };
             
             if (referrerId) {
                  newUser_data.referrerId = referrerId;
@@ -750,8 +727,6 @@ function initApp() {
             // =============================
             updateStatus();
         }
-    }).catch(error => {
-        console.error("Firebase'dan ma'lumotlarni yuklashda xatolik:", error);
     });
 }
 
@@ -811,18 +786,13 @@ function stopMining() {
 }
 
 function updateMiningStatus() {
-    // Har bir tsiklda tekshirish, shuningdek, Firebase'ga yangilanishni yuborishdan oldin ham
     if (remainingTime <= 0 || fuel <= 0 || shield <= 0) {
-        // Yangilanishda firebasedagi isMining = false ga o'rnatiladi
-        stopMining(); 
-        
-        // YANGI MANTIQ: Mining to'xtaganidan keyin yakuniy holatni Firebase'ga saqlash
+        stopMining();
         update(ref(db, "users/" + deviceId), { 
             isMining: false, 
             fuel: Math.max(0, fuel), 
             shield: Math.max(0, shield),
-            balance: balance.toFixed(2), // Pulni 2 xonali aniqlikda saqlash
-            lastLaunchTime: Date.now() // Tugagan vaqtni yozish
+            balance: balance 
         });
         return;
     }
@@ -848,17 +818,6 @@ function updateMiningStatus() {
     const seconds = remainingTime % 60;
     const pad = (num) => String(num).padStart(2, '0');
     adBtn.innerText = `Mining: ${pad(minutes)}:${pad(seconds)}`;
-
-    // YANGI MANTIQ: Har 10 ta yangilanishda (10 sekundda) Firebase'ga yozish
-    if (remainingTime % 10 === 0) {
-        update(ref(db, "users/" + deviceId), { 
-            fuel: fuel, 
-            shield: shield,
-            balance: balance.toFixed(2),
-            //lastLaunchTime ni yangilamaslik (bu faqat start yoki stop da kerak)
-        });
-        console.log(`Firebase yangilandi: qolgan vaqt: ${remainingTime}`);
-    }
 }
 
 function startTimer() {
@@ -875,6 +834,8 @@ function startTimer() {
 
 // =======================================================
 
+
+// =======================================================
 
 </script>
 
