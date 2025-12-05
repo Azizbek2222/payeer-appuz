@@ -683,7 +683,7 @@ function initApp() {
                  referrerId = data.referrerId;
             }
             
-            // === O'ZGARTIRILGAN QATOR ===
+            // === O'ZGARTIRILGAN QATOR: Valyutani usdt qilish ===
             document.getElementById("balance").innerText = balance.toFixed(4)+" usdt";
             // =============================
             updateStatus();
@@ -727,7 +727,7 @@ function initApp() {
                                  
                                  update(ref(db, "users/" + referrerId), { 
                                      // O'tgan vaqtdagi bonusni asosiy balansga qo'shmaslik, faqat referral_bonus maydoniga qo'shish
-                                     referral_bonus: newRefBonus.toFixed(2)
+                                     referral_bonus: newRefBonus.toFixed(4) // 4 xonali aniqlikda saqlash
                                  });
                              }
                          }).catch(error => {
@@ -748,14 +748,14 @@ function initApp() {
                     fuel = 0;
                     shield = 0;
                     
-                    // === O'ZGARTIRILGAN QATOR ===
-                    document.getElementById("balance").innerText = balance.toFixed(2)+" so'm";
+                    // === O'ZGARTIRILGAN QATOR: Balansni 4 xonali aniqlikda usdt qilib saqlash ===
+                    document.getElementById("balance").innerText = balance.toFixed(4)+" usdt";
                     // =============================
                     updateStatus();
                     
                     // YANGI MANTIQ: lastLaunchTime ni ham yangilash - bu juda muhim!
                     update(ref(db, "users/" + deviceId), { 
-                        balance: balance.toFixed(2), // Balansni string sifatida saqlash
+                        balance: balance.toFixed(4), // Balansni string sifatida saqlash
                         fuel: 0, 
                         shield: 0, 
                         isMining: false, 
@@ -767,19 +767,19 @@ function initApp() {
                     // Miningni davom ettirish
                     
                     // Balans va foizlarni yangilash
-                    // === O'ZGARTIRILGAN QATOR ===
-                    document.getElementById("balance").innerText = balance.toFixed(2)+" so'm";
+                    // === O'ZGARTIRILGAN QATOR: Balansni 4 xonali aniqlikda usdt qilish ===
+                    document.getElementById("balance").innerText = balance.toFixed(4)+" usdt";
                     // =============================
                     updateStatus();
                     
                     // YANGI MANTIQ: lastLaunchTime ni hozirgi vaqtga yangilash
                     // Bu, keyingi kirishda faqat shu vaqtdan boshlab hisoblashni ta'minlaydi.
                     update(ref(db, "users/" + deviceId), { 
-                        balance: balance.toFixed(2), // Balansni string sifatida saqlash
+                        balance: balance.toFixed(4), // Balansni string sifatida saqlash
                         fuel: fuel, 
                         shield: shield,
                         isMining: true,
-                        lastLaunchTime: now
+                        lastLaunchTime: now // !!! Eng muhim tuzatish: Kirish vaqtini yozish
                     });
                     
                     startTimer(); // Taymerni qolgan vaqtdan davom ettirish
@@ -789,7 +789,7 @@ function initApp() {
             }
         } else {
             // Yangi foydalanuvchi bo'lsa, 0% bilan saqlash
-            const newUser_data = { fuel: 0, shield: 0, balance: "0.00", isMining: false, lastLaunchTime: Date.now() };
+            const newUser_data = { fuel: 0, shield: 0, balance: "0.0000", isMining: false, lastLaunchTime: Date.now() };
             
             if (referrerId) {
                  newUser_data.referrerId = referrerId;
@@ -798,8 +798,8 @@ function initApp() {
             update(ref(db, "users/" + deviceId), newUser_data);
             
             // Yangi foydalanuvchi uchun balans va foizlarni ekranda ko'rsatish
-            // === O'ZGARTIRILGAN QATOR ===
-            document.getElementById("balance").innerText = balance.toFixed(2)+" so'm";
+            // === O'ZGARTIRILGAN QATOR: Balansni 4 xonali aniqlikda usdt qilish ===
+            document.getElementById("balance").innerText = balance.toFixed(4)+" usdt";
             // =============================
             updateStatus();
         }
@@ -859,7 +859,7 @@ function stopMining() {
     clearInterval(miningInterval);
     miningInterval = null;
     toggleRocketAnimation(false);
-    adBtn.innerText = "raketa konchini uchirish";
+    adBtn.innerText = "launch a rocket miner";
     remainingTime = 0; 
 }
 
@@ -874,7 +874,7 @@ function updateMiningStatus() {
             isMining: false, 
             fuel: Math.max(0, fuel), 
             shield: Math.max(0, shield),
-            balance: balance.toFixed(4), // Pulni 2 xonali aniqlikda saqlash (string)
+            balance: balance.toFixed(4), // Pulni 4 xonali aniqlikda saqlash (string)
             lastLaunchTime: Date.now() // Tugagan vaqtni yozish
         });
         return;
@@ -882,7 +882,7 @@ function updateMiningStatus() {
 
     // 1. Balansni hisoblash va yangilash
     balance += REWARD_PER_SECOND;
-    // === O'ZGARTIRILGAN QATOR ===
+    // === O'ZGARTIRILGAN QATOR: Balansni 4 xonali aniqlikda usdt qilish ===
     document.getElementById("balance").innerText = balance.toFixed(4)+" usdt";
     // =============================
     
@@ -907,7 +907,7 @@ function updateMiningStatus() {
         update(ref(db, "users/" + deviceId), { 
             fuel: fuel, 
             shield: shield,
-            balance: balance.toFixed(2), // Balansni string sifatida saqlash
+            balance: balance.toFixed(4), // Balansni string sifatida saqlash
             //lastLaunchTime ni yangilamaslik (bu faqat start yoki stop da kerak)
         });
         console.log(`Firebase yangilandi: qolgan vaqt: ${remainingTime}`);
