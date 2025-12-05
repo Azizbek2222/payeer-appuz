@@ -125,13 +125,13 @@
 <body>
 
 <div class="container">
-    <h2>🚀 Mavjud vazifalar</h2>
+    <h2>🚀 Available tasks</h2>
     <ul class="task-list" id="task-list">
-        <li style="text-align: center; color: #666;">Vazifalar yuklanmoqda...</li>
+        <li style="text-align: center; color: #666;">Loading tasks...</li>
     </ul>
-    <p id="no-tasks" style="text-align: center; display: none; color: #666;">Hozirda hech qanday vazifa mavjud emas. Keyinroq tekshiring!</p>
+    <p id="no-tasks" style="text-align: center; display: none; color: #666;">There are currently no tasks available. Check back later!</p>
 </div>
-<button class="back-btn" onclick="location.href='index.html'">Orqaga</button>
+<button class="back-btn" onclick="location.href='index.html'">Back</button>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script type="module">
@@ -186,7 +186,7 @@ async function loadUserData() {
 
 // Vazifalarni Firebase'dan yuklash
 async function loadTasks() {
-    taskListEl.innerHTML = '<li style="text-align: center; color: #666;">Vazifalar yuklanmoqda...</li>';
+    taskListEl.innerHTML = '<li style="text-align: center; color: #666;">Loading tasks...</li>';
     noTasksEl.style.display = 'none';
     
     // 1. Foydalanuvchi ma'lumotlarini yuklash (qaysi vazifalar bajarilganini bilish uchun)
@@ -233,8 +233,8 @@ function displayTask(taskId, task) {
     
     li.innerHTML = `
         <div class="task-title">${task.name}</div>
-        <div class="task-details">Mukofot: <span>${task.reward} usdt</span></div>
-        <div class="task-details">Kutish Vaqti: <span>${task.wait_time} soniya</span></div>
+        <div class="task-details">Award: <span>${task.reward} usdt</span></div>
+        <div class="task-details">Wait Time: <span>${task.wait_time} seconds</span></div>
         <button class="task-btn start" data-task-id="${taskId}" data-url="${task.url || ''}" onclick="startTask('${taskId}', ${task.wait_time}, ${task.reward})">Vazifani boshlash</button>
         `;
     taskListEl.appendChild(li);
@@ -252,7 +252,7 @@ window.startTask = function(taskId, waitTime, reward) {
     }
 
     startBtn.disabled = true;
-    startBtn.innerText = "Jarayon ketmoqda..."; // O'zgartirildi
+    startBtn.innerText = "The process is underway..."; // O'zgartirildi
     startBtn.classList.remove('start');
     
     // 2. Tasdiqlash vaqtini hisobga olish (foydalanuvchiga ko'rsatmasdan)
@@ -260,7 +260,7 @@ window.startTask = function(taskId, waitTime, reward) {
     const startTime = Date.now(); 
 
     // 3. Tasdiqlash tugmasini ko'rsatish (Sekund sanash yo'q)
-    startBtn.innerText = "Vazifaning bajarilishini tasdiqlang";
+    startBtn.innerText = "Confirm the completion of the task";
     startBtn.disabled = false;
     startBtn.classList.add('confirm');
     
@@ -274,7 +274,7 @@ async function confirmTask(taskId, reward, requiredWaitTime, startTime) {
     const confirmBtn = taskItem.querySelector('.task-btn');
 
     confirmBtn.disabled = true;
-    confirmBtn.innerText = "Jarayon ketmoqda..."; // O'zgartirildi
+    confirmBtn.innerText = "The process is underway..."; // O'zgartirildi
 
     // 1. Kutish vaqtini tekshirish
     const timeElapsed = (Date.now() - startTime) / 1000; // Sekunddagi farq
@@ -285,7 +285,7 @@ async function confirmTask(taskId, reward, requiredWaitTime, startTime) {
         alert(`Iltimos, vazifani tasdiqlash uchun yana ${remaining} soniya kuting.`); // O'zgartirildi
         
         // Tugmani eski holatiga qaytarish (qayta boshlashga majbur qilish)
-        confirmBtn.innerText = "Vazifa bajarilmadi. Qayta urinib ko'ring (Boshlash)"; // O'zgartirildi
+        confirmBtn.innerText = "Task failed. Try again (Start)"; // O'zgartirildi
         confirmBtn.disabled = false;
         confirmBtn.classList.remove('confirm');
         confirmBtn.classList.add('start');
@@ -308,7 +308,7 @@ async function confirmTask(taskId, reward, requiredWaitTime, startTime) {
         
         // 3. Foydalanuvchi interfeysini yangilash: Bajarilgan deb belgilash
         // Valyuta o'zgartirildi: so'm
-        confirmBtn.innerText = `+${reward.toFixed(4)} usdt qo'shildi! (Bajarildi)`; 
+        confirmBtn.innerText = `+${reward.toFixed(4)} usdt added! (Bajarildi)`; 
         confirmBtn.classList.remove('confirm');
         confirmBtn.classList.add('completed');
         

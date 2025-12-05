@@ -45,13 +45,13 @@
 </head>
 <body>
 <div class="withdraw-box">
-    <div class="box-title">💸 Pulni yechib olish</div>
+    <div class="box-title">💸 Withdraw money</div>
     <form id="withdrawForm">
-        <input type="text" id="payeer" placeholder="FaucetPay E-mail manzilingizni kiriting." required><br>
-        <input type="number" id="amount" placeholder="Miqdori (USDT)" min="0.0001" step="0.0001" required><br>
-        <button type="submit" class="submit-btn">So'rov yuboring</button>
+        <input type="text" id="payeer" placeholder="Enter your FaucetPay E-mail address." required><br>
+        <input type="number" id="amount" placeholder="Amount (USDT)" min="0.0001" step="0.0001" required><br>
+        <button type="submit" class="submit-btn">Send a request</button>
     </form>
-    <button class="back-btn" onclick="location.href='index.html'">Orqaga</button>
+    <button class="back-btn" onclick="location.href='index.html'">Back</button>
 </div>
 
 <script type="module">
@@ -92,12 +92,12 @@
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
         
         if (payeer === "" || !emailPattern.test(payeer) || amount <= 0 || isNaN(amount)) {
-            alert("Iltimos, to'g'ri FaucetPay E-mail manzili va miqdorni kiriting.");
+            alert("Please enter a valid FaucetPay E-mail address and amount.");
             return;
         }
         
         if (amount < MIN_WITHDRAWAL) {
-            alert(`Minimal yechib olish miqdori ${MIN_WITHDRAWAL.toFixed(4)} USDT ni tashkil qiladi.`);
+            alert(`Minimum withdrawal amount ${MIN_WITHDRAWAL.toFixed(4)} constitutes the USDT.`);
             return;
         }
 
@@ -108,7 +108,7 @@
                 const currentBalance = parseFloat(userData.balance) || 0.0000;
 
                 if (amount > currentBalance) {
-                    alert("Balansingizda mablag‘ yetarli emas. Sizning balansingiz: " + currentBalance.toFixed(4) + " USDT");
+                    alert("Your balance is insufficient. Your balance: " + currentBalance.toFixed(4) + " USDT");
                     return;
                 }
                 
@@ -132,7 +132,7 @@
                 })
                 .then(() => {
                     // Ikkala amal ham muvaffaqiyatli yakunlansa
-                    alert(`So'rov muvaffaqiyatli yuborildi: ${amount.toFixed(4)} USDT FaucetPay ${payeer} manziliga. Balansingiz yangilandi.`);
+                    alert(`Request sent successfully: ${amount.toFixed(4)} USDT FaucetPay to ${payeer}. Your balance has been updated.`);
                     document.getElementById("payeer").value = "";
                     document.getElementById("amount").value = "";
                 })
