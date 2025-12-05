@@ -48,7 +48,7 @@
     <div class="box-title">💸 Pulni yechib olish</div>
     <form id="withdrawForm">
         <input type="text" id="payeer" placeholder="uzcard yoki humo karta raqamingizni kiriting." required><br>
-        <input type="number" id="amount" placeholder="Miqdori (so'm)" min="1000" step="0.01" required><br>
+        <input type="number" id="amount" placeholder="Miqdori (so'm)" min="0.01" step="0.01" required><br>
         <button type="submit" class="submit-btn">So'rov yuboring</button>
     </form>
     <button class="back-btn" onclick="location.href='index.html'">Orqaga</button>
@@ -82,7 +82,7 @@
     }
     
     // === MINIMAL YECHISH MIQDORI ===
-    const MIN_WITHDRAWAL = 1000.00; 
+    const MIN_WITHDRAWAL = 0.01; 
 
     document.getElementById("withdrawForm").addEventListener("submit", function(e){
         e.preventDefault();
