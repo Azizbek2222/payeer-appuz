@@ -5,44 +5,53 @@
     <meta charset="UTF-8">
     <title>Reyting - Rocket Mining</title>
     <style>
+        /* YANADA KOO'K VA SHAFFAF DIZAYN */
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #4e9fff, #6ac9ff); /* index.html dizayni bilan mos */
+            background: linear-gradient(135deg, #1f285c, #0d1e4e); /* To'q ko'k asos */
             padding: 10px;
             margin: 0;
             min-height: 100vh;
             color: #fff;
             box-sizing: border-box;
+            animation: backgroundShift 15s ease infinite alternate; /* Animatsiya qo'shildi */
+        }
+        
+        @keyframes backgroundShift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
         }
 
         .back-btn {
-        position: absolute; top: 4px; left: 20px;
-        margin-top: 15px;
-        padding: 10px 20px;
-        background: #f0f0f0;
-        color: #007bff;
-        border: 1px solid #007bff;
-        border-radius: 8px;
-        font-size: 14px;
-        cursor: pointer;
-    }
+            position: absolute; top: 20px; left: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2); /* Shaffof fon */
+            color: #fff;
+            border: 1px solid #7cb9e8;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s;
+        }
+        .back-btn:hover { background: rgba(255, 255, 255, 0.4); }
 
         .container {
             max-width: 450px;
             margin: 10px auto;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.08); /* Eng shaffof qatlam */
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
             text-align: center;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px); /* Katta blur effekti */
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         h2 {
-            color: #FFD700; /* Oltin rang */
-            margin-bottom: 20px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            color: #FFD700;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -50,24 +59,25 @@
         }
         
         .timer-box {
-            background: rgba(255, 255, 255, 0.25);
-            border-radius: 12px;
-            padding: 15px 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3); /* To'qroq, shaffof fon */
+            border-radius: 15px;
+            padding: 20px 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .timer-title {
-            font-size: 14px;
-            color: #E0E0E0;
-            margin-bottom: 5px;
+            font-size: 15px;
+            color: #B0E0E6; /* Och havorang */
+            margin-bottom: 8px;
         }
         
         #countdown-timer {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
-            color: #00c16e; /* Yashil rang */
-            text-shadow: 0 0 5px rgba(0, 193, 110, 0.5);
+            color: #00FFC0; /* Yorqin yashil rang */
+            text-shadow: 0 0 10px rgba(0, 255, 192, 0.8);
         }
 
         .ranking-list {
@@ -77,84 +87,88 @@
         }
 
         .ranking-item {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.05); /* Juda shaffof fon */
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 16px;
-            border-left: 5px solid transparent;
+            font-size: 17px;
+            border-left: 6px solid transparent;
             transition: all 0.3s;
+            backdrop-filter: blur(5px);
         }
 
         .ranking-item.top-3 {
-            border-left: 5px solid #FFD700; /* Oltin chegara */
-            background: rgba(255, 255, 255, 0.25);
+            border-left: 6px solid #FFD700;
+            background: rgba(255, 215, 0, 0.1); /* Oltin rangli shaffof fon */
         }
         
         .ranking-item.you {
-            background: #8A2BE2; /* Binafsha rang */
-            border-left: 5px solid #fff;
+            background: rgba(138, 43, 226, 0.2); /* Binafsha shaffof fon */
+            border-left: 6px solid #fff;
             font-weight: bold;
             transform: scale(1.02);
         }
 
         .rank-number {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #FFD700;
-            width: 30px;
+            width: 35px;
             text-align: center;
         }
 
         .user-info {
             flex-grow: 1;
-            padding-left: 10px;
+            padding-left: 15px;
         }
         
         .user-name {
             font-weight: 500;
+            color: #B0E0E6;
         }
 
         .user-score {
             font-weight: bold;
-            color: #00c16e;
+            color: #00FFC0;
+            text-shadow: 0 0 3px rgba(0, 255, 192, 0.5);
         }
         
         .you-badge {
             background: #FF5722;
             color: white;
-            padding: 2px 6px;
-            border-radius: 5px;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-size: 12px;
-            margin-left: 5px;
+            margin-left: 8px;
         }
 
         .prize-info {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
             text-align: center;
-            font-size: 14px;
+            font-size: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .prize-list {
             list-style: none;
-            padding: 5px 0 0 0;
+            padding: 8px 0 0 0;
             margin: 0;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-around;
-            gap: 5px;
+            gap: 8px;
         }
         .prize-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 5px 8px;
-            border-radius: 6px;
-            flex-basis: 45%;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 7px 10px;
+            border-radius: 8px;
+            flex-basis: 48%;
         }
 
     </style>
@@ -162,31 +176,31 @@
 <body>
 
 <div class="container">
-    <h2>🏆 Reyting Janggi</h2>
+    <h2>🏆 Rating Battle</h2>
     
     <div class="timer-box">
-        <div class="timer-title">Turnir Tugashiga Qoldi</div>
-        <div id="countdown-timer">Yuklanmoqda...</div>
+        <div class="timer-title">The tournament is almost over</div>
+        <div id="countdown-timer">Loading...</div>
     </div>
     
     <div class="prize-info">
-        <div style="font-weight: bold; margin-bottom: 5px;">Sovrinlar Fondi (Eng ko'p Launch Miner uchun)</div>
+        <div style="font-weight: bold; margin-bottom: 8px;">Prize Fund (For most Launch a Miner)</div>
         <ul class="prize-list" id="prize-list">
-            <li class="prize-item">Top 1: 0 so'm</li>
-            <li class="prize-item">Top 2: 0 so'm</li>
-            <li class="prize-item">Top 3: 0 so'm</li>
+            <li class="prize-item">Top 1: 0.0000 USD</li>
+            <li class="prize-item">Top 2: 0.0000 USD</li>
+            <li class="prize-item">Top 3: 0.0000 USD</li>
             </ul>
     </div>
 
-    <h3 style="color: #fff; margin-top: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.3); padding-bottom: 10px;">📊 Top 10 Ishtirokchi</h3>
+    <h3 style="color: #fff; margin-top: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.3); padding-bottom: 10px;">📊 Top 10 Participants</h3>
     
     <ul class="ranking-list" id="ranking-list">
-        <li style="text-align: center; color: #E0E0E0;">Yuklanmoqda...</li>
+        <li style="text-align: center; color: #B0E0E6;">Loading...</li>
     </ul>
     
-    <div id="user-rank-info" style="margin-top: 20px; font-size: 14px;"></div>
+    <div id="user-rank-info" style="margin-top: 20px; font-size: 15px;"></div>
 </div>
-<button class="back-btn" onclick="location.href='index.html'">Orqaga</button>
+<button class="back-btn" onclick="location.href='index.html'">Back</button>
 
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -231,7 +245,7 @@ function startCountdown(endTime) {
 
         if (distance < 0) {
             clearInterval(countdownInterval);
-            timerEl.innerText = "Tugadi! Sovrinlar tarqatilmoqda.";
+            timerEl.innerText = "It's over! Prizes are being distributed.";
             return;
         }
 
@@ -244,26 +258,24 @@ function startCountdown(endTime) {
     }, 1000);
 }
 
-// === Sovrinlar ro'yxatini chiqarish ===
+// === Sovrinlar ro'yxatini chiqarish (USD ga moslandi) ===
 function renderPrizes(prizes) {
     const listEl = document.getElementById("prize-list");
     listEl.innerHTML = '';
     
-    // MUAMMO HAL QILINDI: Sovrin kalitlarini raqam bo'yicha saralash
     const sortedKeys = Object.keys(prizes).sort((a, b) => {
-        // 'top_1' dan 1 raqamini ajratib olish
         const numA = parseInt(a.split('_')[1]); 
         const numB = parseInt(b.split('_')[1]);
-        return numA - numB; // O'sish tartibida saralash (1, 2, 3...)
+        return numA - numB;
     });
     
     sortedKeys.forEach((key) => {
-        const prizeAmount = prizes[key];
+        // Valyuta USD ga o'zgartirildi va 4 xonali aniqlik
+        const prizeAmount = parseFloat(prizes[key]).toFixed(4);
         const li = document.createElement('li');
         li.className = 'prize-item';
-        // key ('top_1', 'top_2'...) dan to'g'ri tartib raqamini olish
         const rank = parseInt(key.split('_')[1]); 
-        li.innerText = `Top ${rank}: ${prizeAmount} so'm`;
+        li.innerText = `Top ${rank}: ${prizeAmount} USD`; // Valyuta o'zgartirildi
         listEl.appendChild(li);
     });
 }
@@ -272,7 +284,7 @@ function renderPrizes(prizes) {
 async function loadRanking() {
     const rankingListEl = document.getElementById("ranking-list");
     const userRankInfoEl = document.getElementById("user-rank-info");
-    rankingListEl.innerHTML = '<li style="text-align: center; color: #E0E0E0;">Ma\'lumotlar yuklanmoqda...</li>';
+    rankingListEl.innerHTML = '<li style="text-align: center; color: #B0E0E6;">Loading data...</li>';
     userRankInfoEl.innerHTML = '';
 
     try {
@@ -285,7 +297,7 @@ async function loadRanking() {
             if (adminSettings.endTime) {
                 startCountdown(adminSettings.endTime);
             } else {
-                 document.getElementById("countdown-timer").innerText = "Turnir o'rnatilmagan.";
+                 document.getElementById("countdown-timer").innerText = "Tournament not set.";
             }
 
             // Sovrinlarni ko'rsatish
@@ -294,13 +306,13 @@ async function loadRanking() {
             }
 
         } else {
-            document.getElementById("countdown-timer").innerText = "Turnir hali boshlanmagan.";
+            document.getElementById("countdown-timer").innerText = "The tournament hasn't started yet.";
         }
 
         // 2. Barcha foydalanuvchilarni yuklash
         const usersSnapshot = await get(child(dbRef, "users"));
         if (!usersSnapshot.exists()) {
-             rankingListEl.innerHTML = '<li style="text-align: center; color: #E0E0E0;">Hali ishtirokchilar yo\'q.</li>';
+             rankingListEl.innerHTML = '<li style="text-align: center; color: #B0E0E6;">Hali ishtirokchilar yo\'q.</li>';
              return;
         }
         
@@ -310,12 +322,10 @@ async function loadRanking() {
         const sortedUsers = Object.keys(usersData)
             .map(key => ({
                 id: key,
-                // launchCount maydoni index.html da mavjud deb hisoblaymiz (agar yo'q bo'lsa, 0)
                 launchCount: usersData[key].launchCount || 0,
-                // Foydalanuvchi nomini telegramId dan olish, agar bo'lmasa qisman ID
-                displayName: usersData[key].telegramId ? `ID ${usersData[key].telegramId}` : `Foydalanuvchi ${key.substring(5, 9)}`
+                displayName: usersData[key].telegramId ? `ID ${usersData[key].telegramId}` : `User ${key.substring(5, 9)}`
             }))
-            .sort((a, b) => b.launchCount - a.launchCount); // Kamayish tartibida saralash
+            .sort((a, b) => b.launchCount - a.launchCount);
             
         rankingListEl.innerHTML = '';
         
@@ -351,7 +361,7 @@ async function loadRanking() {
             // Faqat o'zimizning o'rni Top 10 dan tashqarida bo'lsa ko'rsatamiz
             if (myRank >= 10) {
                  userRankInfoEl.innerHTML = `
-                    Sizning o'rningiz: <span style="font-weight: bold; color: #FFD700;">#${myRank + 1}</span> (Ball: ${myData.launchCount} Launch)
+                    Your place: <span style="font-weight: bold; color: #FFD700;">#${myRank + 1}</span> (Ball: ${myData.launchCount} Launch)
                 `;
             }
         } else {
@@ -366,22 +376,6 @@ async function loadRanking() {
 
 
 window.onload = loadRanking;
-
-// **MUHIM ESLATMA:**
-// index.html dagi `launchMiner` funksiyasiga quyidagi qatorni qo'shing:
-/*
-    // 3. Ma'lumotlarni saqlash (Taymer boshlanganda)
-    let lastLaunchTime = Date.now();
-    
-    // BU YERGA QO'SHILADI:
-    const newLaunchCount = (data.launchCount || 0) + 1; // data - initApp dan kelgan user ma'lumotlari
-    
-    update(ref(db, "users/" + deviceId), { 
-        lastLaunchTime: lastLaunchTime, 
-        isMining: true,
-        launchCount: newLaunchCount // Yangi maydonni saqlash
-    });
-*/
 </script>
 
 </body>
