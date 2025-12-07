@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>Spot Trading | Rocket Mining</title>
+    
+    <style>
+        /* ========================================================== */
+        /* =========== YANADA FUTURISTIK TRADING STILI ============== */
+        /* ========================================================== */
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d0d1e; /* Chuqur ko'k-qora koinot foni */
+            color: #e0f7fa; 
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 20px;
+        }
+
+        /* Umumiy konteynerlar uchun futuristik shaffof stil */
+        .container, .trading-box, .order-form {
+            background: rgba(13, 13, 30, 0.85); /* Koinot foni + shaffoflik */
+            border: 1px solid #00d2ff; /* Yorqin ko'k chegara */
+            border-radius: 20px; 
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); 
+            padding: 15px;
+            margin-top: 15px;
+            width: 95%;
+            max-width: 550px; /* Umumiy konteyner kattalashtirildi */
+            box-sizing: border-box;
+            backdrop-filter: blur(8px); 
+        }
+        
+        /* Orqaga Qaytish Tugmasi */
+        .back-btn {
+            margin-top: 20px;
+            padding: 8px 15px;
+            background: #1a237e;
+            color: #bbdefb;
+            border: 1px solid #3a75b7;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(58, 117, 183, 0.3);
+        }
+        
+        .back-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Sarlavha */
+        h2 {
+            color: #a7ffeb; 
+            text-shadow: 0 0 10px rgba(167, 255, 235, 0.8);
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        /* Balans Qutisi (Neon yoritish) */
+        .balance-info {
+            padding: 15px;
+            background: #1a237e;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid #4fc3f7;
+            text-align: left;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.6);
+        }
+
+        .balance-info div {
+            font-size: 13px;
+            color: #bbdefb;
+            text-transform: uppercase;
+        }
+
+        .balance-info span {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffeb3b; 
+            text-shadow: 0 0 5px #ffeb3b;
+            display: block;
+            margin-top: 3px;
+            margin-bottom: 10px;
+        }
+
+        /* Narx Ko'rsatkichi */
+        .price-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 2px solid #1e0d30;
+        }
+
+        .price-details {
+            text-align: left;
+        }
+        
+        .price-title-symbol {
+            font-size: 14px;
+            color: #7986cb;
+            display: block;
+        }
+
+        .current-price {
+            font-size: 36px; 
+            font-weight: bold;
+            color: #a7ffeb; 
+            text-shadow: 0 0 10px rgba(167, 255, 235, 0.7);
+        }
+        
+        /* O'zgarish foizi stili */
+        .price-change-container {
+            text-align: right;
+        }
+
+        .price-change-title {
+            font-size: 12px;
+            color: #7986cb;
+            margin-bottom: 3px;
+        }
+
+        .price-change {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.5s;
+        }
+
+        /* ========================================= */
+        /* =========== KANDEL GRAFIK STILI ========= */
+        /* ========================================= */
+
+        .chart-container {
+            height: 250px; /* Balandligi ancha oshirildi */
+            width: 100%;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            overflow-x: auto; /* Gorizontal aylantirish */
+            overflow-y: hidden;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+        
+        #candlestick-chart {
+            display: flex;
+            align-items: flex-end; /* Kandellarni pastdan boshlash */
+            height: 100%;
+            padding: 5px;
+            min-width: 100%;
+            box-sizing: border-box;
+            justify-content: flex-start; /* Chapdan boshlash (yangi kandel o'ngda bo'lishi uchun) */
+        }
+        
+        .candlestick {
+            width: 8px; /* Kandel kengligi */
+            margin: 0 1px; /* Oraliq */
+            position: relative;
+            height: 100%;
+            flex-shrink: 0; /* Kichrayishga yo'l qo'ymaydi */
+        }
+
+        .candlestick .wick {
+            position: absolute;
+            width: 1px;
+            background: #e0f7fa;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .candlestick .body {
+            position: absolute;
+            width: 100%;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+            left: 0;
+            cursor: pointer;
+        }
+
+        /* Ko'tarilish (Yashil) */
+        .candlestick.up .body {
+            background: #00c16e; 
+            border-color: #00c16e;
+        }
+        
+        .candlestick.up .wick {
+             background: #00c16e;
+        }
+
+        /* Tushish (Qizil) */
+        .candlestick.down .body {
+            background: #FF5722; 
+            border-color: #FF5722;
+        }
+        
+        .candlestick.down .wick {
+             background: #FF5722;
+        }
+
+        .chart-overlay {
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             color: #7986cb;
+             font-size: 12px;
+             padding: 10px;
+             text-align: right;
+             box-sizing: border-box;
+             pointer-events: none;
+             z-index: 10;
+        }
+
+        /* ========================================= */
+        /* =========== Savdo shakli stili (O'zgarmagan) */
+        /* ========================================= */
+
+        .order-form {
+            padding-top: 15px;
+        }
+
+        .order-type-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid #3a75b7;
+        }
+
+        .order-tab {
+            flex: 1;
+            padding: 12px 0;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #bbdefb;
+        }
+
+        .order-tab.active {
+            color: #111;
+            background: linear-gradient(90deg, #00d2ff, #a7ffeb);
+            box-shadow: inset 0 0 10px rgba(0, 210, 255, 0.7);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ffeb3b; 
+            text-shadow: 0 0 3px rgba(255, 235, 59, 0.5);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #7b1fa2; 
+            border-radius: 10px;
+            background: #1e0d30;
+            color: #a7ffeb; 
+            font-size: 18px;
+            box-sizing: border-box;
+            box-shadow: inset 0 0 8px rgba(123, 31, 162, 0.7);
+            outline: none;
+        }
+
+        .trade-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .buy-btn {
+            background: linear-gradient(45deg, #4CAF50, #00c16e); 
+            color: white;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+
+        .sell-btn {
+            background: linear-gradient(45deg, #FF5722, #e64a19); 
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.6);
+        }
+
+        .trade-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+        }
+
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">⬅️ Asosiyga Qaytish</a>
+
+    <div class="container">
+        <h2>🚀 Spot Trading: RC/USDT</h2>
+
+        <div class="balance-info">
+            <div>USDT Balansingiz</div>
+            <span id="usdt-balance">0.0000 USDT</span>
+            
+            <div>RC Balansingiz (Rocket Coin)</div>
+            <span id="rc-balance">0.0000 RC</span>
+        </div>
+
+        <div class="trading-box">
+            <div class="price-display">
+                <div class="price-details">
+                    <span class="price-title-symbol">RC/USDT</span>
+                    <div class="current-price" id="current-price">0.0500</div>
+                </div>
+                
+                <div class="price-change-container">
+                    <div class="price-change-title">24h Change</div>
+                    <div class="price-change" id="price-change">+0.00%</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-overlay">
+                     <p>AI Narx Harakati</p>
+                     <p>Narx diapazoni: 0.0100 - 0.1000</p>
+                </div>
+                <div id="candlestick-chart">
+                    </div>
+            </div>
+        </div>
+
+        <div class="order-form">
+            <div class="order-type-tabs">
+                <div class="order-tab active" data-type="buy" id="tab-buy">Sotib olish (BUY)</div>
+                <div class="order-tab" data-type="sell" id="tab-sell">Sotish (SELL)</div>
+            </div>
+
+            <div id="buy-form">
+                <div class="input-group">
+                    <label for="buy-amount">Miqdor (RC)</label>
+                    <input type="number" id="buy-amount" placeholder="RC miqdori..." min="0.0001" step="0.0001">
+                </div>
+                <div class="input-group">
+                    <label>Umumiy (USDT)</label>
+                    <input type="text" id="buy-total-usdt" placeholder="Hisoblanadi..." disabled>
+                </div>
+                <button class="trade-btn buy-btn" onclick="executeTrade('buy')">RC Sotib olish</button>
+            </div>
+            
+            <div id="sell-form" style="display: none;">
+                <div class="input-group">
+                    <label for="sell-amount">Miqdor (RC)</label>
+                    <input type="number" id="sell-amount" placeholder="RC miqdori..." min="0.0001" step="0.0001">
+                </div>
+                <div class="input-group">
+                    <label>Qabul qilinadi (USDT)</label>
+                    <input type="text" id="sell-total-usdt" placeholder="Hisoblanadi..." disabled>
+                </div>
+                <button class="trade-btn sell-btn" onclick="executeTrade('sell')">RC Sotish</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, get, child, update, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // === FIREBASE KONFIGURATSIYASI ===
+        const firebaseConfig = {
+          apiKey: "AIzaSyDIeG8dVbm0Yk7FR1hPzrBoD7rgDKWAFoY",
+          authDomain: "user1111-c84a0.firebaseapp.com",
+          databaseURL: "https://user1111-c84a0-default-rtdb.firebaseio.com",
+          projectId: "user1111-c84a0",
+          storageBucket: "user1111-c84a0.firebaseapp.com",
+          messagingSenderId: "901723757936",
+          appId: "1:901723757936:web:9da0a1c7ec494f4a0c03b5",
+          measurementId: "G-9R8ZQY63B1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const dbRef = ref(db);
+        
+        let deviceId = localStorage.getItem("deviceId");
+        if(!deviceId){
+            // Foydalanuvchi ID ni o'rnatish, masalan, Telegram user ID
+            deviceId = "user_" + Math.random().toString(36).substring(2, 9); 
+            localStorage.setItem("deviceId", deviceId);
+        }
+        
+        // Narx simulyatsiyasini boshqarish huquqini tekshirish mantig'i olib tashlandi.
+        // Barcha foydalanuvchilar faqat tinglovchi (Observer) bo'ladi.
+        
+
+        let userBalanceUSDT = 0; 
+        let userBalanceRC = 0;   
+        
+        let currentRCPrice = 0.0500; 
+        let dayOpenPrice = 0.0500; 
+        let candleData = []; 
+        let currentCandle = null;
+        
+        const MAX_CANDLES = 24; 
+        
+        // Narx Firebase yo'li
+        const PRICE_DATA_REF = ref(db, 'price_data/rc_usdt');
+
+        const usdtBalanceEl = document.getElementById('usdt-balance');
+        const rcBalanceEl = document.getElementById('rc-balance');
+        const priceEl = document.getElementById('current-price');
+        const priceChangeEl = document.getElementById('price-change');
+        const candlestickChartEl = document.getElementById('candlestick-chart');
+
+        const MIN_PRICE = 0.0100;
+        const MAX_PRICE = 0.1000;
+        const PRICE_RANGE = MAX_PRICE - MIN_PRICE;
+        
+
+        // =============================================================
+        // =========== FIREBASE TINGLOVCHISI VA EKRAN MANTIQI ==========
+        // =============================================================
+
+        function renderPriceData(data) {
+             if (!data) return;
+
+             currentRCPrice = data.currentPrice || 0.0500;
+             dayOpenPrice = data.dayOpenPrice || 0.0500;
+             
+             // Kandel ma'lumotlarini to'liq obyektlarga aylantirish
+             const loadedCandleData = (data.candles || []).map(c => ({
+                open: c.o,
+                high: c.h,
+                low: c.l,
+                close: c.c
+             }));
+             candleData = loadedCandleData;
+             
+             if (candleData.length > 0) {
+                currentCandle = candleData[candleData.length - 1];
+             } else {
+                 currentCandle = null;
+             }
+             
+             // Narxni ekranda yangilash
+             priceEl.innerText = currentRCPrice.toFixed(4);
+            
+             // 24h Foiz o'zgarishini hisoblash va ekranda yangilash
+             const changePercent = ((currentRCPrice - dayOpenPrice) / dayOpenPrice) * 100;
+             priceChangeEl.innerText = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+             if (changePercent >= 0) {
+                  priceChangeEl.style.color = '#00c16e'; 
+                  priceChangeEl.style.backgroundColor = 'rgba(0, 193, 110, 0.2)';
+             } else {
+                  priceChangeEl.style.color = '#FF5722'; 
+                  priceChangeEl.style.backgroundColor = 'rgba(255, 87, 34, 0.2)';
+             }
+             
+             updateCandlestickChart();
+             updateOrderTotals();
+        }
+
+        // Firebase tinglovchisini o'rnatish (Hamma uchun)
+        function setupPriceListener() {
+             onValue(PRICE_DATA_REF, (snapshot) => {
+                 const data = snapshot.val();
+                 if (data) {
+                     renderPriceData(data);
+                 } else {
+                     // Agar ma'lumotlar yo'q bo'lsa, initial narxni qo'lda o'rnatish kerak (admin panel orqali).
+                     console.log("Narx ma'lumotlari hali o'rnatilmagan. Admin panel kutilmoqda.");
+                 }
+             }, {
+                 onlyOnce: false 
+             });
+        }
+        
+        function updateCandlestickChart() {
+            candlestickChartEl.innerHTML = ''; 
+            
+            const chartHeightPx = 250; 
+            const scaleFactor = chartHeightPx / PRICE_RANGE;
+
+            candleData.forEach(candle => {
+                const candleEl = document.createElement('div');
+                candleEl.classList.add('candlestick');
+                
+                const isUp = candle.close > candle.open;
+                candleEl.classList.add(isUp ? 'up' : 'down');
+                
+                const bodyHeight = Math.abs(candle.close - candle.open) * scaleFactor;
+                const bodyBottomPrice = isUp ? candle.open : candle.close;
+                const bodyBottomPosition = (bodyBottomPrice - MIN_PRICE) * scaleFactor;
+
+                const bodyEl = document.createElement('div');
+                bodyEl.classList.add('body');
+                bodyEl.style.height = Math.max(1, bodyHeight) + 'px'; 
+                bodyEl.style.bottom = bodyBottomPosition + 'px';
+                
+                const wickEl = document.createElement('div');
+                wickEl.classList.add('wick');
+                
+                const wickHeight = (candle.high - candle.low) * scaleFactor;
+                const wickBottomPosition = (candle.low - MIN_PRICE) * scaleFactor;
+                
+                wickEl.style.height = wickHeight + 'px';
+                wickEl.style.bottom = wickBottomPosition + 'px';
+                
+                candleEl.appendChild(wickEl);
+                candleEl.appendChild(bodyEl);
+                candlestickChartEl.appendChild(candleEl);
+            });
+            
+            candlestickChartEl.scrollLeft = candlestickChartEl.scrollWidth;
+        }
+
+        // =============================================================
+        // === QOLGAN FUNKSIYALAR (O'zgarmagan) =========================
+        // =============================================================
+        
+        window.executeTrade = function(type) { 
+            let amountEl = document.getElementById(`${type}-amount`);
+            let amountRC = parseFloat(amountEl.value);
+
+            if (isNaN(amountRC) || amountRC <= 0) {
+                alert("Iltimos, to'g'ri miqdorni kiriting.");
+                return;
+            }
+            const totalUSDT = amountRC * currentRCPrice;
+            
+            if (type === 'buy') {
+                if (userBalanceUSDT < totalUSDT) {
+                    alert(`Balansingizda ${totalUSDT.toFixed(4)} USDT yetarli emas! Mavjud: ${userBalanceUSDT.toFixed(4)} USDT.`);
+                    return;
+                }
+                userBalanceUSDT -= totalUSDT;
+                userBalanceRC += amountRC;
+                alert(`Muvaffaqiyatli: ${amountRC.toFixed(4)} RC ${totalUSDT.toFixed(4)} USDT ga sotib olindi.`);
+            } else if (type === 'sell') {
+                if (userBalanceRC < amountRC) {
+                    alert(`RC balansingizda ${amountRC.toFixed(4)} RC yetarli emas! Mavjud: ${userBalanceRC.toFixed(4)} RC.`);
+                    return;
+                }
+                userBalanceRC -= amountRC;
+                userBalanceUSDT += totalUSDT; 
+                alert(`Muvaffaqiyatli: ${amountRC.toFixed(4)} RC ${totalUSDT.toFixed(4)} USDT ga sotildi.`);
+            }
+
+            updateBalanceDisplay();
+            saveBalancesToFirebase(); 
+            
+            amountEl.value = '';
+            document.getElementById(`${type}-total-usdt`).value = '';
+        };
+
+        function updateOrderTotals() {
+             const buyAmountEl = document.getElementById('buy-amount');
+             const sellAmountEl = document.getElementById('sell-amount');
+             const buyTotalEl = document.getElementById('buy-total-usdt');
+             const sellTotalEl = document.getElementById('sell-total-usdt');
+             
+             const buyAmountRC = parseFloat(buyAmountEl.value);
+             if (!isNaN(buyAmountRC) && buyAmountRC > 0) {
+                 buyTotalEl.value = (buyAmountRC * currentRCPrice).toFixed(4);
+             } else {
+                 buyTotalEl.value = '';
+             }
+
+             const sellAmountRC = parseFloat(sellAmountEl.value);
+             if (!isNaN(sellAmountRC) && sellAmountRC > 0) {
+                 sellTotalEl.value = (sellAmountRC * currentRCPrice).toFixed(4);
+             } else {
+                 sellTotalEl.value = '';
+             }
+        }
+        
+        document.getElementById('buy-amount').addEventListener('input', updateOrderTotals);
+        document.getElementById('sell-amount').addEventListener('input', updateOrderTotals);
+
+        function updateBalanceDisplay() {
+            usdtBalanceEl.innerText = userBalanceUSDT.toFixed(4) + " USDT";
+            rcBalanceEl.innerText = userBalanceRC.toFixed(4) + " RC";
+        }
+
+        function saveBalancesToFirebase() {
+             update(ref(db, "users/" + deviceId), {
+                balance: userBalanceUSDT.toFixed(4), 
+                rc_balance: userBalanceRC.toFixed(4) 
+             });
+        }
+
+        function loadBalancesFromFirebase() {
+            get(child(dbRef, "users/" + deviceId)).then(snapshot => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    userBalanceUSDT = parseFloat(data.balance) || 0; 
+                    userBalanceRC = parseFloat(data.rc_balance) || 0; 
+                    updateBalanceDisplay();
+                } else {
+                    update(ref(db, "users/" + deviceId), { 
+                        balance: "0.0000", 
+                        rc_balance: "0.0000" 
+                    });
+                    updateBalanceDisplay();
+                }
+            }).catch(error => {
+                console.error("Balanslarni yuklashda xatolik:", error);
+            });
+        }
+        
+        document.getElementById('tab-buy').addEventListener('click', () => {
+            document.getElementById('tab-buy').classList.add('active');
+            document.getElementById('tab-sell').classList.remove('active');
+            document.getElementById('buy-form').style.display = 'block';
+            document.getElementById('sell-form').style.display = 'none';
+        });
+
+        document.getElementById('tab-sell').addEventListener('click', () => {
+            document.getElementById('tab-buy').classList.remove('active');
+            document.getElementById('tab-sell').classList.add('active');
+            document.getElementById('buy-form').style.display = 'none';
+            document.getElementById('sell-form').style.display = 'block';
+        });
+
+        // === INIT ===
+        function initTradingApp() {
+            loadBalancesFromFirebase(); 
+            setupPriceListener(); 
+        }
+
+        window.onload = initTradingApp;
+
+    </script>
+</body>
+</html>
