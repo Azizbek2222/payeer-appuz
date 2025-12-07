@@ -194,7 +194,7 @@
             });
         }
         
-        // === YUQORIDAN QO'SHILGAN FUNKSIYA: ONLAYN HOLATNI BOSHQAARISH ===
+        // === QO'SHILGAN FUNKSIYA: ONLAYN HOLATNI BOSHQAARISH ===
         
         /**
          * Foydalanuvchining onlayn holatini belgilaydi va boshqa onlayn foydalanuvchilarni hisoblaydi.
@@ -237,11 +237,12 @@
         
         /**
          * Onlayn foydalanuvchilar sonini o'yin ekraniga chizish.
+         * ("Transitions" pastida ko'rsatish uchun 100 y o'qida joylashtirildi)
          */
         function drawOnlineCount() {
             ctx.fillStyle = '#1e3c72'; // To'q ko'k rang
             ctx.font = 'bold 20px Arial';
-            ctx.fillText(`Online: ${onlineCount} 👥`, canvas.width - 150, 40); 
+            ctx.fillText(`Online: ${onlineCount} 👥`, 10, 100); // Transitions (70) pastida
         }
 
         // === WITHDRAW FUNKSIYASI BUTUNLAY OLIB TASHLANDI ===
@@ -303,7 +304,7 @@
             ctx.font = 'bold 20px Arial';
             ctx.fillText(`Transitions: ${score}`, 10, 70); 
             
-            // === YUQORIDAN QO'SHILGAN QATOR: ONLAYN HISOB LAGICHI ===
+            // === ONLAYN HISOB LAGICHI QO'SHILDI (70 dan pastda) ===
             drawOnlineCount();
         }
 
