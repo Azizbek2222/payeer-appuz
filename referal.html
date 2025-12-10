@@ -159,8 +159,8 @@
             <div class="stat-label">Taklif qilinganlar</div>
         </div>
         <div class="stat-box">
-            <div class="stat-value" id="referral-bonus">0.00 ₽</div>
-            <div class="stat-label">Umumiy daromad (2%)</div>
+            <div class="stat-value" id="referral-bonus">0.00 usdt</div>
+            <div class="stat-label">Umumiy daromad (0.005 usdt/referal)</div>
         </div>
     </div>
 
@@ -180,16 +180,19 @@
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get, child, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// === FIREBASE KONFIGURATSIYASI ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+    getDatabase, ref, get, set, child, query, orderByChild, equalTo 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+// === FIREBASE CONFIG ===
 const firebaseConfig = {
   apiKey: "AIzaSyDIeG8dVbm0Yk7FR1hPzrBoD7rgDKWAFoY",
   authDomain: "user1111-c84a0.firebaseapp.com",
   databaseURL: "https://user1111-c84a0-default-rtdb.firebaseio.com",
   projectId: "user1111-c84a0",
-  storageBucket: "user1111-c84a0.firebaseapp.com",
+  storageBucket: "user1111-c84a0.appspot.com",
   messagingSenderId: "901723757936",
   appId: "1:901723757936:web:9da0a1c7ec494f4a0c03b5",
   measurementId: "G-9R8ZQY63B1"
@@ -199,102 +202,98 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const dbRef = ref(db);
 
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// === DEVICE ID ===
 let deviceId = localStorage.getItem("deviceId");
-if(!deviceId){
-    deviceId = "user_"+Math.random().toString(36).substr(2,9);
+if (!deviceId) {
+    deviceId = "user_" + Math.random().toString(36).substring(2, 10);
     localStorage.setItem("deviceId", deviceId);
 }
 
-// Telegram Web App URL olish mantiqi
-let botUsername = "rocket_mining_bot"; // BOTINGIZNING USERNAME'I
+// === REFERAL LINK ===
+let botUsername = "rocket_mining_bot";
 const referralLinkEl = document.getElementById("referral-link");
 const referralLink = `https://t.me/${botUsername}?start=${deviceId}`;
-
-// Havolani darhol ko'rsatish
 referralLinkEl.innerText = referralLink;
 
+// Nusxalash
+window.copyLink = function () {
+    navigator.clipboard.writeText(referralLink).then(() => {
+        tg.showAlert("Havola nusxalandi!");
+    });
+};
 
-// Havolani nusxalash funksiyasi
-window.copyLink = function() {
-    const linkText = referralLinkEl.innerText;
-    
-    // Telegram Mini App mavjud bo'lsa, ogohlantirishni chiroyli chiqarish
-    if (window.Telegram && window.Telegram.WebApp) {
-        navigator.clipboard.writeText(linkText).then(() => {
-            Telegram.WebApp.showAlert('Havola nusxalandi! Do\'stlaringizni taklif qiling.');
-        }).catch(err => {
-            Telegram.WebApp.showAlert('Nusxalash xatolik bilan yakunlandi.');
-        });
-    } else {
-        // Oddiy brauzer uchun
-        navigator.clipboard.writeText(linkText).then(() => {
-            alert('Havola nusxalandi: ' + linkText);
-        }).catch(err => {
-            alert('Nusxalashda xatolik. Iltimos, qo\'lda nusxalashga harakat qiling.');
-        });
-    }
-}
+// === 1. START_PARAM Olish (referal orqali kirganda) ===
+// Bu mantiq asosan index.html da bajarilishi kerak, bu yerda faqat ko'rsatish
+// Ilova TWA ichida ochilganida, index.html ga o'tishdan oldin bu fayl saqlamasligi kerak, 
+// shuning uchun bu qismni olib tashladim. Ma'lumotni saqlash index.html da qoldi.
 
-// Taklif qilingan do'stlarni yuklash
+
+// === REFERALLARNI YUKLASH ===
+
 async function loadReferrals() {
     const referralListEl = document.getElementById("referral-list");
-    referralListEl.innerHTML = '<li class="no-referrals">Ma\'lumotlar yuklanmoqda...</li>';
-    
-    // 1. Foydalanuvchi ma'lumotlarini yuklash (bonusni ko'rsatish uchun)
+    referralListEl.innerHTML = '<li class="no-referrals">Yuklanmoqda...</li>';
+
+    let totalReferrals = 0;
+    let totalBonus = 0; // referral_bonus ni bu yerda hisoblamaymiz, faqat ko'rsatamiz
+
     try {
+        // 1. Foydalanuvchining ma'lumotlarini yuklash (bonus miqdorini olish uchun)
         const userSnapshot = await get(child(dbRef, "users/" + deviceId));
         if (userSnapshot.exists()) {
             const userData = userSnapshot.val();
-            const totalBonus = userData.referral_bonus || 0;
-            document.getElementById("referral-bonus").innerText = `${totalBonus.toFixed(2)} ₽`;
-        } else {
-            document.getElementById("referral-bonus").innerText = `0.00 ₽`;
+            // referral_bonus ni to'g'ri raqam formatida olish
+            totalBonus = parseFloat(userData.referral_bonus) || 0;
         }
-    } catch (error) {
-        console.error("Bonus yuklanishida xatolik:", error);
-    }
-    
-    // 2. Taklif qilingan do'stlar ro'yxatini topish
-    try {
-        const referralsQuery = query(ref(db, "users"), orderByChild("referrerId"), equalTo(deviceId));
+
+        // 2. Taklif qilingan do'stlar ro'yxatini yuklash
+        const referralsQuery = query(
+            ref(db, "users"),
+            orderByChild("referrerId"),
+            equalTo(deviceId)
+        );
+
         const snapshot = await get(referralsQuery);
-        
+
         if (snapshot.exists()) {
             const users = snapshot.val();
-            const referralKeys = Object.keys(users);
-            
-            document.getElementById("referral-count").innerText = referralKeys.length; // Sanash
-            referralListEl.innerHTML = ''; 
+            const keys = Object.keys(users);
+            totalReferrals = keys.length;
 
-            referralKeys.forEach((key, index) => {
-                const user = users[key];
-                const li = document.createElement('li');
-                li.className = 'referral-item';
-                
-                // Do'stning ID'sini qisman ko'rsatish
-                const friendIdPart = key.substring(key.length - 4); 
-                const friendDisplay = user.telegramId ? `ID: ${user.telegramId}` : `Foydalanuvchi #${index + 1} (${friendIdPart})`;
+            document.getElementById("referral-count").innerText = totalReferrals;
+            referralListEl.innerHTML = "";
 
-                const status = user.isMining ? 'Miningda (Faol)' : 'Qo\'shildi'; 
+            keys.forEach((key, i) => {
+                const u = users[key];
+                const li = document.createElement("li");
+                li.className = "referral-item";
 
                 li.innerHTML = `
-                    <span>👤 ${friendDisplay}</span>
-                    <span class="status" style="color: ${user.isMining ? '#00c16e' : '#FFD700'};">${status}</span>
+                    <span>👤 Foydalanuvchi #${i + 1}</span>
+                    <span class="status" style="color: ${u.isMining ? '#00c16e' : '#FFD700'};">${u.isMining ? "Faol" : "Qo'shildi"}</span>
                 `;
+
                 referralListEl.appendChild(li);
             });
-
         } else {
             document.getElementById("referral-count").innerText = 0;
-            referralListEl.innerHTML = '<li class="no-referrals">Hali taklif qilingan do\'stlaringiz yo\'q.</li>';
+            referralListEl.innerHTML = `<li class="no-referrals">Hali referal yo'q.</li>`;
         }
-    } catch (error) {
-        console.error("Referallar yuklanishida xatolik:", error);
-        referralListEl.innerHTML = '<li class="no-referrals" style="color: red;">Do\'stlar ro\'yxatini yuklashda xatolik.</li>';
+    } catch (err) {
+        console.error("Referal yuklanishida xatolik:", err);
+        referralListEl.innerHTML = `<li class="no-referrals" style="color:red;">Ma'lumotlarni yuklashda xatolik.</li>`;
     }
+
+    // BONUS ko'rsatish (Endi Firebase'dan olingan totalBonus ishlatiladi)
+    // Va doimo usdt ko'rinishida formatlash
+    document.getElementById("referral-bonus").innerText = totalBonus.toFixed(4) + " usdt";
 }
 
 window.onload = loadReferrals;
+
 </script>
 
 </body>
