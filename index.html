@@ -1249,7 +1249,7 @@ function updateMiningStatus() {
     if (remainingTime % 10 === 0) {
         // Shuningdek, 10 sekundda bir marta referer bonusini ham yozamiz
         if (referrerId) {
-             const referralPercent = 0.01; // 1% ga o'zgartirildi
+             const referralPercent = 0.001; // 1% ga o'zgartirildi
              // 10 sekund uchun bonus: 10 * REWARD_PER_SECOND * 0.01
              const bonusFor10Seconds = 10 * REWARD_PER_SECOND * referralPercent;
              
