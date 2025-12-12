@@ -242,14 +242,14 @@ async function loadReferrals() {
     referralListEl.innerHTML = '<li class="no-referrals">Yuklanmoqda...</li>';
 
     let totalReferrals = 0;
-    let totalBonus = 0; // referral_bonus ni bu yerda hisoblamaymiz, faqat ko'rsatamiz
+    let totalBonus = 0; 
 
     try {
         // 1. Foydalanuvchining ma'lumotlarini yuklash (bonus miqdorini olish uchun)
         const userSnapshot = await get(child(dbRef, "users/" + deviceId));
         if (userSnapshot.exists()) {
             const userData = userSnapshot.val();
-            // referral_bonus ni to'g'ri raqam formatida olish
+            // referral_bonus ni to'g'ri raqam formatida olish va floatga aylantirish (Tuzatish)
             totalBonus = parseFloat(userData.referral_bonus) || 0;
         }
 
