@@ -1006,7 +1006,7 @@ function initApp() {
 
                     // YANGI MANTIQ QO'SHILDI: REFERRAL BONUSINI ASOSIY FOYDALANUVCHIGA HAM HISOBLASH
                     if (referrerId) {
-                         // 1% ga ko'paytirilgan miqdor (0.01)
+                         // 1% ga ko'paytirilgan miqdor (0.02 o'rniga 0.01)
                          const referralPercent = 0.01; 
                          const totalReferrerBonus = effectiveMiningTime * REWARD_PER_SECOND * referralPercent; 
                          
@@ -1216,7 +1216,7 @@ function updateMiningStatus() {
     
     // --- REFERRAL BONUSINI SEKUNDMA-SEKUND HISBLASH ---
     if (referrerId) {
-        const referralPercent = 0.01; // 1% ga o'zgartirildi
+        const referralPercent = 001; // 1% ga o'zgartirildi
         const currentReferrerBonus = REWARD_PER_SECOND * referralPercent;
         
         // Bu joyda har sekundda referer balansini yangilash tavsiya etilmaydi.
@@ -1249,7 +1249,7 @@ function updateMiningStatus() {
     if (remainingTime % 10 === 0) {
         // Shuningdek, 10 sekundda bir marta referer bonusini ham yozamiz
         if (referrerId) {
-             const referralPercent = 0.01; // <--- BU QATOR 0.001 O'RNIGA 0.01 QILIB TO'G'IRLANDI
+             const referralPercent = 001; // 1% ga o'zgartirildi
              // 10 sekund uchun bonus: 10 * REWARD_PER_SECOND * 0.01
              const bonusFor10Seconds = 10 * REWARD_PER_SECOND * referralPercent;
              
