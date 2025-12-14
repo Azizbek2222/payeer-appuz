@@ -632,7 +632,7 @@ function handleMiningControl(status, message) {
         minerStatusBoxEl.style.display = 'none'; 
         
         // 3. Xabarni ko'rsatish
-        controlMessageEl.innerText = message || "Suspended by administrator."; 
+        controlMessageEl.innerText = message || "Ma'mur tomonidan to'xtatildi."; 
         controlMessageEl.style.display = 'block'; 
 
     } else { // status === 'running'
@@ -653,6 +653,57 @@ function handleMiningControl(status, message) {
 }
 // === FUNKSIYALAR YAKUNI ===
 
+// ==========================================================
+// === YANGI QO'SHILGAN KOD: TMA MINIMALLASHTIRILGANDA ISHLAYDI ===
+// ==========================================================
+
+/**
+ * Hujjatning ko'rinish holati o'zgarganda ishga tushadi.
+ * TMA minimallashtirilganda yoki orqa fonga o'tkazilganda "hidden" bo'ladi.
+ */
+function handleVisibilityChange() {
+    if (document.visibilityState === 'hidden') {
+        // Hujjat yashirilgan (masalan, TMA minimallashtirilgan)
+        if (miningInterval) {
+            console.log("Visibility change: Document hidden. Stopping mining.");
+            
+            // 1. Miningni to'xtatish
+            stopMining(false); // Foydalanuvchi emas, tizim to'xtatdi
+            
+            // 2. Balansni saqlash (zarur bo'lsa)
+            if (earnedSinceLastAd > 0) {
+                 saveBalanceToFirebase().then(() => {
+                    console.log(`Hidden: ${earnedSinceLastAd.toFixed(6)} USDT saved.`);
+                    earnedSinceLastAd = 0; 
+                    progressValueEl.innerText = `${earnedSinceLastAd.toFixed(6)} / ${AD_TRIGGER_AMOUNT.toFixed(6)} USDT`;
+                });
+            }
+
+            // 3. Statusni yangilash
+            miningStatusEl.innerText = "Paused (Background/Hidden)";
+            miningStatusEl.style.color = "#ffeb3b";
+        }
+        
+    } else {
+        // Hujjat ko'rsatilgan (masalan, TMA qayta ochildi)
+        console.log("Visibility change: Document visible. Allowing user to restart.");
+        
+        // Agar admin tomonidan to'xtatilmagan bo'lsa, foydalanuvchiga yana ishga tushirish imkonini berish
+        if (!isAdminStopped) {
+            miningToggleBtn.innerText = "Start Auto Mining 🚀";
+            miningToggleBtn.classList.remove("mining-active");
+            miningStatusEl.innerText = "Ready to start";
+            miningStatusEl.style.color = "#e0f7fa";
+        }
+    }
+}
+
+// Hodisa tinglovchisini qo'shish
+document.addEventListener('visibilitychange', handleVisibilityChange);
+
+// ==========================================================
+// === YANGI QO'SHILGAN KOD YAKUNI ===
+// ==========================================================
 
 function loadInitialData() {
     get(child(dbRef, "users/" + deviceId)).then(snapshot => {
@@ -705,6 +756,10 @@ window.onload = loadInitialData;
 window.onbeforeunload = function() {
     if (miningInterval) {
          set(ref(db, "online_users/" + deviceId), null);
+         // Agar yopilishdan oldin pul yig'ilgan bo'lsa, saqlash
+         if (earnedSinceLastAd > 0) {
+             saveBalanceToFirebase();
+         }
     }
 };
 
