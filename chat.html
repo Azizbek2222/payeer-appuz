@@ -12,16 +12,26 @@
         padding: 0;
         height: 100vh;
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* Asosiy kontentni ustma-ust qo'yish */
+    }
+    .chat-title {
+        text-align: center;
+        padding: 15px;
+        background: #333;
+        color: white;
+        font-size: 18px;
+        font-weight: bold;
+        flex-shrink: 0; /* Sarlavha o'zgarmas o'lchamda turadi */
     }
     .chat-container {
-        flex-grow: 1;
+        flex-grow: 1; /* Kontent qismi bo'sh joyni egallaydi */
         display: flex;
         flex-direction: column;
         padding: 10px;
         max-width: 600px;
         width: 100%;
         margin: 0 auto;
+        box-sizing: border-box; /* Padding hisobga olinadi */
     }
     /* Xabarlar ro'yxati joylashuvi */
     #chat-messages {
@@ -34,13 +44,13 @@
         margin: 0;
         box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
     }
-    /* Xabarlar stili */
+    /* Xabarlar stili (avvalgi kabi) */
     .message-bubble {
         margin-bottom: 12px;
         display: flex;
         flex-direction: column;
         max-width: 85%;
-        position: relative; /* Reply tugmasini joylashtirish uchun */
+        position: relative;
     }
     .message-content {
         padding: 10px 15px;
@@ -49,20 +59,25 @@
         word-wrap: break-word;
         box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     }
+    .message-image {
+        /* Base64 katta bo'lishi mumkin, max kenglik qo'yish yaxshi */
+        max-width: 100%; 
+        height: auto;
+        border-radius: 10px;
+        margin-top: 5px;
+    }
     .message-user {
         font-size: 11px;
         color: #555;
         margin-bottom: 3px;
-        display: flex; /* Nik va galochkani yonma-yon qo'yish uchun */
+        display: flex;
         align-items: center;
     }
     .verified-icon {
-        width: 20px; /* Galochka o'lchami */
+        width: 20px;
         height: 20px;
         margin-left: 5px;
     }
-
-    /* O'z xabarlari (You) */
     .message-mine {
         align-self: flex-end;
     }
@@ -76,14 +91,10 @@
         color: #e0e0e0;
     }
     .message-mine .message-user .verified-icon {
-        /* O'z xabarining nikini o'ng tomonga siljitish uchun */
         order: 2; 
         margin-left: 0;
         margin-right: 5px;
     }
-
-
-    /* Boshqa foydalanuvchi xabarlari (Them) */
     .message-other {
         align-self: flex-start;
     }
@@ -92,10 +103,8 @@
         color: #333;
         border-bottom-left-radius: 4px;
     }
-    
-    /* Admin xabarlari */
     .message-admin {
-        align-self: flex-start; /* Admin xabarlari ham oddiydek chapda ko'rinadi */
+        align-self: flex-start;
     }
     .message-admin .message-content {
         background: #ffaa00;
@@ -104,33 +113,29 @@
         border-bottom-left-radius: 4px;
     }
     .message-admin .message-user {
-        color: #cc8000; /* Admin nikining rangi */
+        color: #cc8000;
     }
-
-    /* === REPLY BLOKI STILI === */
     .reply-block {
-        background: rgba(0, 0, 0, 0.05); /* Yengil kulrang fon */
-        border-left: 3px solid #007bff; /* Moviy chiziq */
+        background: rgba(0, 0, 0, 0.05);
+        border-left: 3px solid #007bff;
         padding: 5px 10px;
         border-radius: 4px;
         margin-bottom: 5px;
         font-size: 13px;
         color: #666;
         max-height: 50px;
-        overflow: hidden; /* Matn o'chmasligi uchun */
+        overflow: hidden;
         text-overflow: ellipsis; 
     }
     .message-mine .reply-block {
-        border-left: 3px solid #00c16e; /* Yuborgan xabar uchun yashil chiziq */
-        color: #ddd; /* O'z xabarimizda yengil rang */
+        border-left: 3px solid #00c16e;
+        color: #ddd;
         background: rgba(255, 255, 255, 0.1);
     }
-    
-    /* === REPLY TUGMASI STILI === */
     .reply-btn {
         position: absolute;
         top: 0;
-        right: -30px; /* Xabar blokidan tashqarida */
+        right: -30px;
         background: transparent;
         border: none;
         color: #555;
@@ -141,34 +146,31 @@
         padding: 5px;
     }
     .message-mine .reply-btn {
-        left: -30px; /* O'z xabarlarim chapda ko'rinadi */
+        left: -30px;
         right: auto;
     }
     .reply-btn:hover {
         opacity: 1;
     }
-    /* ================================= */
-
-
     /* Input maydoni */
     .chat-input-container {
+        flex-shrink: 0; /* Bu qism joylashuvni ushlab turadi */
         display: flex;
         flex-direction: column;
-        padding: 0 10px 10px;
+        padding: 10px;
         background: white;
         border-top: 1px solid #ddd;
         border-radius: 0 0 12px 12px;
         box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
     }
-
     .replying-to-indicator {
-        display: none; /* Standart holatda yashirin */
+        display: none;
         background: #f0f0f0;
         padding: 8px 10px;
         border-left: 4px solid #007bff;
         font-size: 13px;
         color: #333;
-        margin: 10px 0 0;
+        margin: 0 0 10px 0;
         border-radius: 4px;
         position: relative;
     }
@@ -187,44 +189,81 @@
         cursor: pointer;
         font-size: 16px;
     }
-
     .chat-input {
         display: flex;
-        padding-top: 10px;
+        align-items: center;
     }
+    
+    /* FAYL TANLASH TUGMASI STILI */
+    #image-select-btn {
+        background: #ccc;
+        color: #333;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 10px; 
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+    #image-select-btn:hover {
+        background: #bbb;
+    }
+    #image-file-input {
+        display: none;
+    }
+    
     #message-input {
         flex-grow: 1;
         padding: 10px 15px;
         border: 1px solid #ddd;
         border-radius: 20px;
-        font-size: 16px;
-        margin-right: 10px;
+        font-size: 12px;
+        margin-right: 5px; 
     }
+    
+    /* YUBORISH TUGMASINI TO'G'RILASH */
     #send-btn {
         background: #00c16e;
         color: white;
         border: none;
         border-radius: 20px;
-        padding: 10px 20px;
+        padding: 10px;
         font-size: 16px;
         cursor: pointer;
         transition: background 0.3s;
+        min-width: 80px; 
+        flex-shrink: 0;
     }
     #send-btn:active {
         background: #00a25e;
     }
-
-    /* Title Bar */
-    .chat-title {
-        text-align: center;
-        padding: 15px;
-        background: #333;
-        color: white;
-        font-size: 18px;
+    #send-btn:disabled { 
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    /* ======================================= */
+    
+    /* PROGRESS BAR STILI (Endi faqat yuklanish indikatori) */
+    .image-indicator {
+        font-size: 12px;
+        color: #007bff;
+        margin-top: 0;
+        margin-bottom: 5px;
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center;
+    }
+    #upload-percent {
         font-weight: bold;
     }
+    .progress-bar {
+        /* RTDB uchun progress bar keraksiz, shuning uchun yashiriladi */
+        display: none !important; 
+    }
+    /* ================================= */
 
-    /* === back-btn === */
     .back-btn {
         position: fixed; 
         top: 15px; 
@@ -238,9 +277,6 @@
         cursor: pointer;
         z-index: 1000; 
     }
-    /* ==================================== */
-
-    /* === BLOKLANGANLIK XABARI STILI === */
     .blocked-message {
         flex-grow: 1;
         display: flex;
@@ -256,8 +292,6 @@
         margin: 20px;
         box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
     }
-    /* ========================================= */
-
 </style>
 </head>
 <body>
@@ -266,35 +300,40 @@
     🚀 Umumiy Chat
 </div>
 
-<div id="chat-content">
-    <div class="chat-container">
-        <ul id="chat-messages">
-            </ul>
+<div id="chat-content" class="chat-container">
+    <ul id="chat-messages">
+        </ul>
+    
+    <div class="chat-input-container">
+        <div class="replying-to-indicator" id="reply-indicator">
+            Javob: <span id="reply-text"></span> 
+            <button class="clear-reply-btn" onclick="clearReply()">✖</button>
+        </div>
         
-        <div class="chat-input-container">
-            <div class="replying-to-indicator" id="reply-indicator">
-                Javob: <span id="reply-text"></span> 
-                <button class="clear-reply-btn" onclick="clearReply()">✖</button>
+        <div id="image-upload-indicator" class="image-indicator" style="display: none;">
+            Rasm tanlandi: <span id="image-file-name"></span>
             </div>
-            
-            <div class="chat-input">
-                <input type="text" id="message-input" placeholder="Xabar yozish..." onkeyup="checkEnter(event)">
-                <button id="send-btn" onclick="sendMessage()">Yuborish</button>
-            </div>
+        
+        <div class="chat-input">
+            <input type="file" id="image-file-input" accept="image/*" onchange="displayFileName()">
+            <button id="image-select-btn" onclick="document.getElementById('image-file-input').click()">🖼️ send a picture</button>
+            <input type="text" id="message-input" placeholder="Write a message..." onkeyup="checkEnter(event)">
+            <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
     </div>
 </div>
 
 <div id="blocked-content" class="blocked-message" style="display: none;">
-    ❌ Siz ushbu chatdan bloklangansiz.
+    ❌ You have been blocked from this chat..
 </div>
 
-<button class="back-btn" onclick="location.href='index.html'">Orqaga</button>
+<button class="back-btn" onclick="location.href='index.html'">Back</button>
 
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getDatabase, ref, push, onValue, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+// Firebase Storage importlari olib tashlandi.
 
 // === FIREBASE KONFIGURATSIYASI ===
 // Konfiguratsiyani o'zgartiring!
@@ -311,8 +350,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+// const storage = getStorage(app); // Storage o'chirildi
 const chatRef = ref(db, 'chats/global_chat'); 
-const blockedRef = ref(db, 'blocked_users'); // Bloklanganlar ro'yxatini tinglash
+const blockedRef = ref(db, 'blocked_users');
 
 // Device ID ni olish (asosiy ilovadagi kabi)
 let deviceId = localStorage.getItem("deviceId");
@@ -329,44 +369,53 @@ function checkBlockStatus(blockedUsersSnapshot) {
     const isBlockedNow = blockedList && blockedList.hasOwnProperty(deviceId);
 
     if (isBlockedNow && !isUserBlocked) {
-        // Yangi bloklandi
         isUserBlocked = true;
         document.getElementById('chat-content').style.display = 'none';
         document.getElementById('blocked-content').style.display = 'flex';
     } else if (!isBlockedNow && isUserBlocked) {
-        // Blokdan chiqarildi
         isUserBlocked = false;
         document.getElementById('chat-content').style.display = 'flex';
         document.getElementById('blocked-content').style.display = 'none';
     } else if (!isUserBlocked) {
-         // Birinchi marta kirish, agar bloklanmagan bo'lsa chatni ko'rsatish
         document.getElementById('chat-content').style.display = 'flex';
         document.getElementById('blocked-content').style.display = 'none';
     }
 }
 
-
-// Bloklanganlar ro'yxatini tinglash
 onValue(blockedRef, (snapshot) => {
     checkBlockStatus(snapshot);
 });
-
 
 // === REPLY HOLATINI SAQLASH UCHUN GLOBAL O'ZGARUVCHILAR ===
 let replyingToId = null;
 let replyingToText = null;
 
 // === CONSTANTS ===
-// Tasdiqlangan galochka rasmi (yashil)
 const VERIFIED_ICON_URL = "galochka.png";
+
+// === Rasm tanlanganligini ko'rsatish funksiyasi ===
+window.displayFileName = function() {
+    const fileInput = document.getElementById('image-file-input');
+    const indicator = document.getElementById('image-upload-indicator');
+    const fileNameSpan = document.getElementById('image-file-name');
+    
+
+    if (fileInput.files.length > 0) {
+        fileNameSpan.innerText = fileInput.files[0].name;
+        indicator.style.display = 'flex';
+    } else {
+        fileNameSpan.innerText = '';
+        indicator.style.display = 'none';
+    }
+}
 
 // === REPLY FUNKSIYALARI ===
 window.setReply = function(id, text) {
-    if (isUserBlocked) return; // Bloklangan bo'lsa, hech narsa qilmaslik
+    if (isUserBlocked) return;
     
     replyingToId = id;
     replyingToText = text;
-    document.getElementById('reply-text').innerText = text.substring(0, 50) + (text.length > 50 ? '...' : ''); // Matnni qisqartirish
+    document.getElementById('reply-text').innerText = text.substring(0, 50) + (text.length > 50 ? '...' : '');
     document.getElementById('reply-indicator').classList.add('active');
     document.getElementById('message-input').focus();
 }
@@ -378,114 +427,174 @@ window.clearReply = function() {
     document.getElementById('reply-indicator').classList.remove('active');
 }
 
-
 // === CHAT MANTIQI ===
-
 function renderMessage(key, message, isMine) {
     const chatMessagesEl = document.getElementById('chat-messages');
     
+    if (document.getElementById(`msg-${key}`)) return;
+
     const li = document.createElement('li');
     li.classList.add('message-bubble');
+    li.id = `msg-${key}`;
     
-    // --- NIKNI VA GALOCHKANI ANQLASH VA SHAKLLANTIRISH ---
     let usernameDisplay;
     let bubbleClass;
 
     if (message.isAdmin) {
-        // ADMIN xabari
-        const adminNik = message.username || "Yordamchi";
+        const adminNik = message.username || "admin";
         usernameDisplay = `${adminNik} <img src="${VERIFIED_ICON_URL}" alt="Verified" class="verified-icon">`;
         bubbleClass = 'message-admin';
     } else if (isMine) {
-        // O'zingizning xabaringiz
         usernameDisplay = message.username || deviceId.substring(0, 8);
         bubbleClass = 'message-mine';
     } else {
-        // Boshqa foydalanuvchilar xabari
         usernameDisplay = message.username || "Anonim";
         bubbleClass = 'message-other';
     }
 
     li.classList.add(bubbleClass);
-    // --------------------------------------------------------
     
     let replyHtml = '';
     if (message.replyToText) {
-        // Javob berilgan xabarni ko'rsatish
         replyHtml = `<div class="reply-block">Javob berilgan: ${message.replyToText.substring(0, 40) + (message.replyToText.length > 40 ? '...' : '')}</div>`;
     }
+    
+    let imageHtml = '';
+    // ENDI message.imageUrl emas, message.imageBase64Data tekshiriladi
+    if (message.imageBase64Data) {
+        // Base64 ma'lumotini to'g'ridan-to'g'ri src ga berish
+        imageHtml = `<img src="${message.imageBase64Data}" class="message-image" alt="Yuborilgan rasm">`;
+    }
+
+    const messageContent = message.text || (message.imageBase64Data ? '' : '...');
 
     li.innerHTML = `
-        <button class="reply-btn" onclick="setReply('${key}', '${message.text.replace(/'/g, "\\'")}')">↪</button>
+        <button class="reply-btn" onclick="setReply('${key}', '${messageContent.replace(/'/g, "\\'")}')">↪</button>
         ${replyHtml}
         <span class="message-user">${usernameDisplay}</span>
-        <div class="message-content">${message.text}</div>
+        <div class="message-content">
+            ${message.text ? message.text : ''} ${imageHtml}
+        </div>
     `;
 
     chatMessagesEl.appendChild(li);
-    // Eng pastga aylantirish
-    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
 }
 
+
+// === RASMNI BASE64 GA O'TKAZISH FUNKSIYASI (Realtime Database uchun) ===
+function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            return resolve(null);
+        }
+        
+        // Realtime Database ning 10MB limitini hisobga olgan holda maksimal 7MB rasmga ruxsat berish.
+        const MAX_FILE_SIZE = 7 * 1024 * 1024; 
+        if (file.size > MAX_FILE_SIZE) {
+            reject(new Error("Fayl juda katta (Maks. 7MB). Realtime Database katta hajmdagi fayllarni qo'llab-quvvatlamaydi. Iltimos, kichikroq rasm tanlang."));
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result); // Base64 ma'lumotini qaytaradi
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file); // Faylni Base64 Data URL formatida o'qish
+    });
+}
+
+
 // Xabar yuborish
-window.sendMessage = function() {
+window.sendMessage = async function() {
     if (isUserBlocked) {
         alert("Siz bloklangansiz va xabar yubora olmaysiz.");
         return;
     }
     
     const inputEl = document.getElementById('message-input');
+    const imageInputEl = document.getElementById('image-file-input');
     const messageText = inputEl.value.trim();
+    const imageFile = imageInputEl.files[0];
 
-    if (messageText === "") return;
+    if (messageText === "" && !imageFile) return;
 
+    let base64Data = null; // Yangi o'zgaruvchi Base64 ma'lumotni saqlaydi
+    const sendBtn = document.getElementById('send-btn');
+    
+    if (imageFile) {
+        
+        sendBtn.disabled = true; // Rasm Base64 ga o'tkazilayotganda tugmani o'chirish
+        
+        try {
+            // Rasm faylini Base64 formatida o'qish
+            base64Data = await fileToBase64(imageFile);
+            
+        } catch (error) {
+            alert(error.message); // Fayl hajmi limiti yoki o'qish xatosi
+            sendBtn.disabled = false;
+            return; 
+        }
+    }
+    
+    // Agar Base64 konversiyasi muvaffaqiyatli bo'lsa yoki matn mavjud bo'lsa, xabarni yuborish
     const newMessage = {
         user_id: deviceId, 
-        username: deviceId.substring(0, 8), // Nik sifatida ID ning qismini ishlatamiz
+        username: deviceId.substring(0, 8),
         text: messageText,
+        // Base64 ma'lumotini saqlash
+        imageBase64Data: base64Data, 
         timestamp: serverTimestamp(),
-        isAdmin: false, // Oddiy foydalanuvchi
-        // Reply ma'lumotlarini qo'shish
+        isAdmin: false,
         replyToId: replyingToId,
         replyToText: replyingToText
     };
 
     push(chatRef, newMessage)
         .then(() => {
-            inputEl.value = ''; // Yuborilgandan keyin maydonni tozalash
-            clearReply(); // Reply holatini tozalash
+            inputEl.value = '';
+            imageInputEl.value = '';
+            window.displayFileName(); // Indikatorni tozalash
+            clearReply();
+            sendBtn.disabled = false;
         })
         .catch(error => {
             console.error("Xabar yuborishda xato:", error);
-            alert("Xabar yuborilmadi. Internet yoki server bilan muammo.");
+            alert("Xabar yuborilmadi. Internet yoki Realtime Database qoidalari bilan muammo (Xatolikni brauzer konsolida tekshiring).");
+            sendBtn.disabled = false;
         });
 };
 
 // Enter tugmasi bilan yuborish
 window.checkEnter = function(event) {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !document.getElementById('send-btn').disabled) {
         sendMessage();
     }
 }
 
 // Xabarlarni tinglash (Real-time)
-const messagesQuery = query(chatRef, limitToLast(100)); // Oxirgi 100 ta xabar
+const messagesQuery = query(chatRef, limitToLast(100));
 
 onValue(messagesQuery, (snapshot) => {
-    // Agar bloklangan bo'lsa, chatni render qilishni o'tkazib yuboramiz.
-    // checkBlockStatus funksiyasi allaqachon chat kontentini yashirgan bo'lishi kerak.
     if (isUserBlocked) return; 
 
     const chatMessagesEl = document.getElementById('chat-messages');
-    chatMessagesEl.innerHTML = ''; // Listni tozalash
+    
+    // Scroll holatini saqlash (eng pastga yaqin bo'lsa avtomatik tushadi)
+    const shouldScroll = chatMessagesEl.scrollTop + chatMessagesEl.clientHeight >= chatMessagesEl.scrollHeight - 50;
+
+    // Xabarlarni tozalash 
+    chatMessagesEl.innerHTML = ''; 
 
     snapshot.forEach((childSnapshot) => {
-        const messageKey = childSnapshot.key; // Xabarning ID sini olish
+        const messageKey = childSnapshot.key;
         const message = childSnapshot.val();
-        // Foydalanuvchining o'z xabarimi?
         const isMine = message.user_id === deviceId && !message.isAdmin; 
         renderMessage(messageKey, message, isMine);
     });
+    
+    // Foydalanuvchi eng pastda bo'lsa, pastga tushadi
+    if (shouldScroll) {
+         chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
 });
 
 // Sahifa yuklanganda bloklanganlik holatini tekshirish uchun barcha kontentni yashiramiz
