@@ -23,13 +23,13 @@
         </div>
 
         <div class="glass rounded-3xl p-6 mb-6 text-center">
-            <p class="text-gray-400 text-sm mb-4">Mablag'ni olish uchun hamyonni ulang</p>
+            <p class="text-gray-400 text-sm mb-4">Connect your wallet to withdraw funds.</p>
             <div id="ton-connect-button" class="flex justify-center"></div>
         </div>
 
         <div class="glass rounded-3xl p-6 space-y-4">
             <div>
-                <label class="text-xs text-gray-400 uppercase font-bold ml-1">Summa (TON)</label>
+                <label class="text-xs text-gray-400 uppercase font-bold ml-1">Amount (TON)</label>
                 <input id="amount" type="number" placeholder="Min: 0.01" step="0.001" 
                     class="w-full bg-black/20 border border-white/10 p-4 rounded-2xl outline-none focus:border-blue-500 transition-all text-xl font-bold">
             </div>
@@ -42,7 +42,7 @@
         </div>
 
         <div class="mt-8 text-center text-gray-500 text-xs">
-            <p>So'rovlar 24 soat ichida ko'rib chiqiladi.</p>
+            <p>Requests will be processed within 24 hours..</p>
         </div>
     </div>
 
@@ -80,13 +80,13 @@
             const msg = document.getElementById('msg');
             
             if (!tonConnectUI.connected) {
-                msg.innerText = "❌ Avval hamyonni ulang!";
+                msg.innerText = "❌ Connect your wallet first!";
                 msg.className = "text-center text-red-400 font-medium";
                 return;
             }
 
             if (isNaN(amount) || amount < 0.01) {
-                msg.innerText = "❌ Minimal 0.01 TON bo'lishi kerak";
+                msg.innerText = "❌ Minimum must be 0.01 TON";
                 msg.className = "text-center text-red-400 font-medium";
                 return;
             }
@@ -115,7 +115,7 @@
                 // Balansni yangilash (ayirish)
                 await update(userRef, { balance: balance - amount });
                 
-                msg.innerText = "✅ So'rov qabul qilindi!";
+                msg.innerText = "✅ Request accepted!";
                 msg.className = "text-center text-green-400 font-medium";
                 document.getElementById('amount').value = "";
             }
