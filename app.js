@@ -29,6 +29,22 @@ const userId = getUserId();
 const botToken = "8106213930:AAHzObkRHkBIQObLxMPW-Ctl0WMFbmpupmI";
 const AdController = window.Adsgram.init({ blockId: "int-19304" });
 
+// TON Connect UI sozlamalari
+const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: 'https://raw.githubusercontent.com/ton-community/tutorials/main/03-client/test/public/tonconnect-manifest.json',
+    buttonRootId: 'ton-connect-button'
+});
+
+// Hamyon holatini kuzatish va Firebasega saqlash
+tonConnectUI.onStatusChange(async (wallet) => {
+    if (wallet) {
+        const walletAddress = wallet.account.address;
+        const userRef = ref(db, 'users/' + userId);
+        await update(userRef, { wallet: walletAddress });
+        console.log("Hamyon ulandi va saqlandi:", walletAddress);
+    }
+});
+
 // Referalni aniqlash
 function getReferrerId() {
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.start_param) {
@@ -39,7 +55,6 @@ function getReferrerId() {
 
 const referrerId = getReferrerId();
 
-// Telegram orqali xabar yuborish funksiyasi
 async function sendTelegramMessage(text) {
     const chatId = userId.replace("tg_", "");
     if (!isNaN(chatId)) {
@@ -59,7 +74,6 @@ async function sendTelegramMessage(text) {
     }
 }
 
-// Birinchi marta kirishni tekshirish
 async function checkFirstTimeEntry() {
     const userRef = ref(db, 'users/' + userId);
     const snapshot = await get(userRef);
@@ -126,7 +140,6 @@ async function handleClaim() {
                 }
             }
             
-            // 30 daqiqadan keyin eslatma yuborish
             setTimeout(() => {
                 const reminderText = "🚀 <b>Vaqt bo'ldi!</b>\n\nRaketangiz tayyor. Claim qilishni unutmang!";
                 sendTelegramMessage(reminderText);
@@ -173,7 +186,6 @@ function checkTimer(lastClaim) {
     }, 1000);
 }
 
-// Barcha funksiyalarni ishga tushirish
 window.handleClaim = handleClaim;
-checkFirstTimeEntry(); // Yangi foydalanuvchini tekshirish va xabar yuborish
-loadUserData(); // Foydalanuvchi ma'lumotlarini yuklash
+checkFirstTimeEntry();
+loadUserData();
