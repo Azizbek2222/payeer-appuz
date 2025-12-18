@@ -14,19 +14,41 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Foydalanuvchi ID
-const userId = "user_test_123"; 
+// Har bir user uchun alohida ID olish
+function getUserId() {
+    let finalId = "";
+    
+    // 1. Telegramdan ID olishga urinish
+    try {
+        const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
+        if (tgUser && tgUser.id) {
+            finalId = "tg_" + tgUser.id;
+        }
+    } catch (e) {
+        console.log("Telegram SDK topilmadi");
+    }
 
-// AdsGram Controllerni init qilish
+    // 2. Agar TG bo'lmasa, Brauzer LocalStorage ishlatish
+    if (!finalId) {
+        finalId = localStorage.getItem('rocket_mining_uid');
+        if (!finalId) {
+            finalId = "user_" + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('rocket_mining_uid', finalId);
+        }
+    }
+    
+    return finalId;
+}
+
+const userId = getUserId(); 
+
 const AdController = window.Adsgram.init({ blockId: "int-19304" });
 
 async function handleClaim() {
     try {
-        // Reklamani ko'rsatish va natijani kutish
         const result = await AdController.show();
         
         if (result.done) {
-            // Reklama muvaffaqiyatli ko'rilsa
             startRocketAnimation();
             
             const userRef = ref(db, 'users/' + userId);
@@ -35,11 +57,12 @@ async function handleClaim() {
             
             if (snapshot.exists()) {
                 const data = snapshot.val();
+                // 30 minutlik tekshiruv
                 if (now - data.lastClaim < 30 * 60 * 1000) {
                     alert("Iltimos, kutib turing!");
                     return;
                 }
-                const newBalance = (data.balance || 0) + 0.0001;
+                const newBalance = (parseFloat(data.balance) || 0) + 0.0001;
                 await update(userRef, { balance: newBalance, lastClaim: now });
             } else {
                 await set(userRef, { balance: 0.0001, lastClaim: now });
@@ -47,13 +70,11 @@ async function handleClaim() {
             
             loadUserData();
         } else {
-            // Foydalanuvchi reklamani yopib yuborsa
             alert("Mukofot olish uchun reklamani oxirigacha ko'ring!");
         }
     } catch (e) {
-        // Reklama yuklanishda xato (bloklovchilar yoki tarmoq xatosi)
         console.error("AdsGram Error:", e);
-        alert("Reklama yuklanmadi. Iltimos, AdBlock'ni o'chiring.");
+        alert("Reklama yuklanmadi. Iltimos, keyinroq urinib ko'ring.");
     }
 }
 
@@ -71,12 +92,14 @@ async function loadUserData() {
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
         const data = snapshot.val();
-        document.getElementById('balance').innerText = data.balance.toFixed(4) + " TON";
+        document.getElementById('balance').innerText = (data.balance || 0).toFixed(4) + " TON";
         checkTimer(data.lastClaim);
     }
 }
 
 function checkTimer(lastClaim) {
+    if (!lastClaim) return;
+    
     const btn = document.getElementById('claimBtn');
     const timerDiv = document.getElementById('timer');
     
@@ -100,6 +123,5 @@ function checkTimer(lastClaim) {
     }, 1000);
 }
 
-// Funksiyani global qilish (HTML dagi onclick ishlashi uchun)
 window.handleClaim = handleClaim;
 loadUserData();
