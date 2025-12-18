@@ -38,6 +38,25 @@ function getReferrerId() {
 
 const referrerId = getReferrerId();
 
+// Telegram orqali bildirishnoma yuborish funksiyasi
+function sendTelegramNotification() {
+    const botToken = "8106213930:AAHzObkRHkBIQObLxMPW-Ctl0WMFbmpupmI"; // Bu yerga botingiz tokenini yozing
+    const chatId = userId.replace("tg_", "");
+    const message = "🚀 <b>Vaqt bo'ldi!</b>\n\nRaketangiz tayyor. Tezroq ilovaga kiring va o'z mukofotingizni claim qiling!";
+
+    if (!isNaN(chatId)) {
+        fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: message,
+                parse_mode: "HTML"
+            })
+        }).catch(err => console.error("Xabarnoma yuborishda xatolik:", err));
+    }
+}
+
 async function handleClaim() {
     try {
         const result = await AdController.show();
@@ -46,27 +65,24 @@ async function handleClaim() {
             const userRef = ref(db, 'users/' + userId);
             const snapshot = await get(userRef);
             const now = Date.now();
-            const reward = 0.0001; // Har bir claim uchun foydalanuvchiga beriladigan miqdor
-            const bonusPercent = 0.02; // 2% Referal bonus
+            const reward = 0.0001;
+            const bonusPercent = 0.02;
 
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 if (now - data.lastClaim < 30 * 60 * 1000) { alert("Kuting!"); return; }
                 
-                // 1. Foydalanuvchining o'z balansini yangilash
                 await update(userRef, { 
                     balance: (data.balance || 0) + reward, 
                     lastClaim: now 
                 });
 
-                // 2. Taklif qilgan odamga (referrer) 2% bonus berish
                 if (data.invitedBy) {
                     const bossRef = ref(db, 'users/' + data.invitedBy);
                     const bossSnap = await get(bossRef);
                     if (bossSnap.exists()) {
                         const bossData = bossSnap.val();
-                        const bonusAmount = reward * bonusPercent; // Masalan: 0.0001 * 0.02 = 0.000002
-                        
+                        const bonusAmount = reward * bonusPercent;
                         await update(bossRef, { 
                             balance: (bossData.balance || 0) + bonusAmount,
                             referralEarnings: (bossData.referralEarnings || 0) + bonusAmount
@@ -74,7 +90,6 @@ async function handleClaim() {
                     }
                 }
             } else {
-                // Yangi foydalanuvchi birinchi marta CLAIM qilganda
                 const newUserObj = { 
                     balance: reward, 
                     lastClaim: now,
@@ -84,15 +99,12 @@ async function handleClaim() {
                 };
                 await set(userRef, newUserObj);
 
-                // Taklif qilgan odamning statistikasini yangilash (Count +1)
                 if (referrerId && referrerId !== userId) {
                     const bossRef = ref(db, 'users/' + referrerId);
                     const bossSnap = await get(bossRef);
                     if (bossSnap.exists()) {
                         const bossData = bossSnap.val();
-                        // Yangi referal uchun 2% bonusni ham shu zahoti berish
                         const bonusAmount = reward * bonusPercent;
-                        
                         await update(bossRef, { 
                             referralCount: (bossData.referralCount || 0) + 1,
                             balance: (bossData.balance || 0) + bonusAmount,
@@ -101,6 +113,10 @@ async function handleClaim() {
                     }
                 }
             }
+            
+            // 30 daqiqadan keyin bildirishnoma yuborishni rejalashtirish
+            setTimeout(sendTelegramNotification, 30 * 60 * 1000);
+            
             loadUserData();
         }
     } catch (e) { alert("Reklama yuklanmadi!"); console.error(e); }
@@ -120,7 +136,6 @@ async function loadUserData() {
     const snapshot = await get(userRef);
     if (snapshot.exists()) {
         const data = snapshot.val();
-        // UI da ko'proq raqamlarni ko'rish uchun toFixed(6) qilindi
         document.getElementById('balance').innerText = (data.balance || 0).toFixed(6) + " TON";
         checkTimer(data.lastClaim);
     }
