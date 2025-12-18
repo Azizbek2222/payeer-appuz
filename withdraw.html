@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Withdraw</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -16,7 +17,7 @@
         <div class="flex items-center mb-8">
             <button onclick="location.href='index.html'" class="text-gray-400 hover:text-white transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="15 19l-7-7 7-7" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
             <h1 class="text-2xl font-bold ml-4">Withdraw TON</h1>
@@ -50,6 +51,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, get, update, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // Telegram WebApp initialization
+        const webApp = window.Telegram.WebApp;
+        webApp.ready();
+        webApp.expand();
+
         const firebaseConfig = {
             apiKey: "AIzaSyDIeG8dVbm0Yk7FR1hPzrBoD7rgDKWAFoY",
             authDomain: "user1111-c84a0.firebaseapp.com",
@@ -63,13 +69,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // Manifest manzili mutlaq (absolute) bo'lishi shart
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: 'https://azizbek2222.github.io/Rocket-mining-bot/tonconnect-manifest.json',
             buttonRootId: 'ton-connect-button'
         });
 
         function getUserId() {
-            if (window.Telegram?.WebApp?.initDataUnsafe?.user) return "tg_" + window.Telegram.WebApp.initDataUnsafe.user.id;
+            if (webApp.initDataUnsafe?.user) return "tg_" + webApp.initDataUnsafe.user.id;
             return localStorage.getItem('mining_uid');
         }
 
@@ -102,7 +109,6 @@
                     return;
                 }
 
-                // Bazaga so'rov yuborish
                 const requestRef = push(ref(db, 'withdraw_requests'));
                 await set(requestRef, {
                     uid: userId,
@@ -112,7 +118,6 @@
                     date: new Date().toLocaleString()
                 });
 
-                // Balansni yangilash (ayirish)
                 await update(userRef, { balance: balance - amount });
                 
                 msg.innerText = "✅ Request accepted!";
