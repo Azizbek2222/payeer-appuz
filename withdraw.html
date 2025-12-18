@@ -85,8 +85,8 @@
                 return;
             }
 
-            if (isNaN(amount) || amount < 0.01) {
-                msg.innerText = "❌ Minimum must be 0.01 TON";
+            if (isNaN(amount) || amount < 0.001) {
+                msg.innerText = "❌ Minimum must be 0.001 TON";
                 msg.className = "text-center text-red-400 font-medium";
                 return;
             }
