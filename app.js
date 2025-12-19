@@ -70,7 +70,7 @@ async function checkFirstTimeEntry() {
 
 async function handleClaim() {
     if (!AdController) {
-        window.Telegram.WebApp.showAlert("Reklama yuklanmadi. Iltimos, bir oz kuting yoki sahifani yangilang.");
+        window.Telegram.WebApp.showAlert("The ad failed to load. Please wait a moment or refresh the page..");
         return;
     }
 
@@ -88,7 +88,7 @@ async function handleClaim() {
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 if (now - data.lastClaim < 30 * 60 * 1000) { 
-                    window.Telegram.WebApp.showAlert("Iltimos, kuting!"); 
+                    window.Telegram.WebApp.showAlert("Please wait!"); 
                     return; 
                 }
                 
@@ -135,16 +135,16 @@ async function handleClaim() {
             }
             
             setTimeout(() => {
-                const reminderText = "🚀 <b>Vaqt bo'ldi!</b>\n\nRaketangiz tayyor. Claim qilishni unutmang!";
+                const reminderText = "🚀 <b>It's time!</b>\n\nYour rocket is ready. Don't forget to claim it!";
                 sendTelegramMessage(reminderText);
             }, 30 * 60 * 1000);
             
             loadUserData();
         } else {
-            window.Telegram.WebApp.showAlert("Mukofot olish uchun reklamani oxirigacha ko'rishingiz kerak.");
+            window.Telegram.WebApp.showAlert("You must watch the ad to the end to receive the reward..");
         }
     } catch (e) { 
-        window.Telegram.WebApp.showAlert("Hozircha reklama mavjud emas. Bir ozdan keyin urinib ko'ring."); 
+        window.Telegram.WebApp.showAlert("There are no ads available at this time. Please try again later.."); 
         console.error(e); 
     }
 }
