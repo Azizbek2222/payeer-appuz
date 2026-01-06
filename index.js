@@ -25,7 +25,7 @@ const app = initializeApp(firebaseConfig);
 
 // 4. MANA SHU YERGA QO'YASIZ (App Check)
 const appCheck = initializeAppCheck(app, {
-  provider: new ReCaptchaEnterpriseProvider('SIZNING_RECAPTCHA_SITE_KEYINGIZ'), // Bu yerga o'sha uzun kalitni qo'ying
+  provider: new ReCaptchaEnterpriseProvider('6LeDP0IsAAAAAJqLR8fT-FWQ-a440HlC_NBCa79s'), // Bu yerga o'sha uzun kalitni qo'ying
   isTokenAutoRefreshEnabled: true 
 });
 
