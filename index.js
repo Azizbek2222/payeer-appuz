@@ -13,197 +13,162 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const userId = getUserId();
+const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "int-19356" }) : null;
+
+// Foydalanuvchi holati
+let fuel = 0;
+let shield = 0;
+let isMining = false;
 
 function getUserId() {
-    let id = "";
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
-        id = "tg_" + window.Telegram.WebApp.initDataUnsafe.user.id;
-    } else {
-        id = localStorage.getItem('mining_uid') || "user_" + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('mining_uid', id);
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+        return "tg_" + window.Telegram.WebApp.initDataUnsafe.user.id;
     }
+    let id = localStorage.getItem('mining_uid') || "user_" + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('mining_uid', id);
     return id;
 }
 
-const userId = getUserId();
-const botToken = "8106213930:AAHzObkRHkBIQObLxMPW-Ctl0WMFbmpupmI";
-let isNotificationSent = false; // 10 soniya qolganida xabar uchun flag
-
-// REKLAMA QISMI
-const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "int-19356" }) : null;
-
-function getReferrerId() {
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.start_param) {
-        return "tg_" + window.Telegram.WebApp.initDataUnsafe.start_param;
+// Reklama va Benzin
+window.refuel = async () => {
+    if (fuel >= 100 || isMining) return;
+    const res = await showAd();
+    if (res) {
+        fuel = Math.min(fuel + 50, 100);
+        updateUI();
+        checkLaunch();
     }
-    return null;
-}
+};
 
-const referrerId = getReferrerId();
-
-async function sendTelegramMessage(text) {
-    const chatId = userId.replace("tg_", "");
-    if (!isNaN(chatId)) {
-        try {
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: text,
-                    parse_mode: "HTML"
-                })
-            });
-        } catch (err) {
-            console.error("Telegram xabar yuborishda xatolik:", err);
-        }
+// Reklama va Qalqon
+window.chargeShield = async () => {
+    if (shield >= 100 || isMining) return;
+    const res = await showAd();
+    if (res) {
+        shield = Math.min(shield + 50, 100);
+        updateUI();
+        checkLaunch();
     }
-}
+};
 
-async function checkFirstTimeEntry() {
-    const userRef = ref(db, 'users/' + userId);
-    const snapshot = await get(userRef);
-    if (!snapshot.exists()) {
-        const welcomeText = "👋 <b>Welcome!</b>\n\nYou have successfully logged in to the Rocket Mining app. Get rewards every 5 minutes and collect TON! 🚀";
-        await sendTelegramMessage(welcomeText);
-    }
-}
-
-async function handleClaim() {
+async function showAd() {
     if (!AdController) {
-        window.Telegram.WebApp.showAlert("The ad failed to load. Please wait a moment or refresh the page..");
-        return;
+        window.Telegram.WebApp.showAlert("Ad error");
+        return false;
     }
-
     try {
         const result = await AdController.show();
-        
-        if (result && result.done) {
-            startRocketAnimation();
-            const userRef = ref(db, 'users/' + userId);
-            const snapshot = await get(userRef);
-            const now = Date.now();
-            const reward = 0.0001;
-            const bonusPercent = 0.02;
-
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                if (now - data.lastClaim < 5 * 60 * 1000) { 
-                    window.Telegram.WebApp.showAlert("Please wait!"); 
-                    return; 
-                }
-                
-                await update(userRef, { 
-                    balance: (data.balance || 0) + reward, 
-                    lastClaim: now 
-                });
-
-                if (data.invitedBy) {
-                    const bossRef = ref(db, 'users/' + data.invitedBy);
-                    const bossSnap = await get(bossRef);
-                    if (bossSnap.exists()) {
-                        const bossData = bossSnap.val();
-                        const bonusAmount = reward * bonusPercent;
-                        await update(bossRef, { 
-                            balance: (bossData.balance || 0) + bonusAmount,
-                            referralEarnings: (bossData.referralEarnings || 0) + bonusAmount
-                        });
-                    }
-                }
-            } else {
-                const newUserObj = { 
-                    balance: reward, 
-                    lastClaim: now,
-                    invitedBy: referrerId,
-                    referralCount: 0,
-                    referralEarnings: 0
-                };
-                await set(userRef, newUserObj);
-
-                if (referrerId && referrerId !== userId) {
-                    const bossRef = ref(db, 'users/' + referrerId);
-                    const bossSnap = await get(bossRef);
-                    if (bossSnap.exists()) {
-                        const bossData = bossSnap.val();
-                        const bonusAmount = reward * bonusPercent;
-                        await update(bossRef, { 
-                            referralCount: (bossData.referralCount || 0) + 1,
-                            balance: (bossData.balance || 0) + bonusAmount,
-                            referralEarnings: (bossData.referralEarnings || 0) + bonusAmount
-                        });
-                    }
-                }
-            }
-            
-            isNotificationSent = false; // Taymerni qayta boshlash uchun reset
-            loadUserData();
-        } else {
-            window.Telegram.WebApp.showAlert("You must watch the ad to the end to receive the reward..");
-        }
-    } catch (e) { 
-        window.Telegram.WebApp.showAlert("There are no ads available at this time. Please try again later.."); 
-        console.error(e); 
+        return result.done;
+    } catch (e) {
+        window.Telegram.WebApp.showAlert("No ads available");
+        return false;
     }
 }
 
-function startRocketAnimation() {
-    const rocket = document.getElementById('rocket');
-    rocket.classList.add('flying', 'animate__animated', 'animate__bounceOutUp');
-    setTimeout(() => {
-        rocket.classList.remove('animate__bounceOutUp');
-        rocket.classList.add('animate__bounceInDown');
-    }, 2000);
+function updateUI() {
+    document.getElementById('fuelFill').style.width = fuel + "%";
+    document.getElementById('shieldFill').style.width = shield + "%";
+    
+    document.getElementById('fuelBtn').disabled = (fuel >= 100 || isMining);
+    document.getElementById('shieldBtn').disabled = (shield >= 100 || isMining);
 }
 
-async function loadUserData() {
+async function checkLaunch() {
+    if (fuel >= 100 && shield >= 100 && !isMining) {
+        startMining();
+    }
+}
+
+async function startMining() {
+    isMining = true;
+    const now = Date.now();
     const userRef = ref(db, 'users/' + userId);
-    const snapshot = await get(userRef);
-    if (snapshot.exists()) {
-        const data = snapshot.val();
+    
+    await update(userRef, { 
+        lastLaunch: now,
+        isMining: true
+    });
 
-        // BLOKLASH TEKSHIRUVI
-        if (data.isBlocked === true) {
-            document.body.innerHTML = `
-                <div style="background:#000; height:100vh; width:100vw; position:fixed; top:0; left:0; z-index:9999; display:flex; align-items:center; justify-content:center;">
-                </div>`;
-            return; 
-        }
+    triggerRocketAnimation(true);
+    startTimer(10 * 60); // 10 daqiqa
+}
 
-        document.getElementById('balance').innerText = (data.balance || 0).toFixed(6) + " TON";
-        checkTimer(data.lastClaim);
+function triggerRocketAnimation(active) {
+    const r = document.getElementById('rocket');
+    if (active) {
+        r.classList.add('flying-mode', 'animate__animated', 'animate__bounceInUp');
+    } else {
+        r.classList.remove('flying-mode', 'animate__animated', 'animate__bounceInUp');
     }
 }
 
-function checkTimer(lastClaim) {
-    if (!lastClaim) return;
-    const btn = document.getElementById('claimBtn');
-    const timerDiv = document.getElementById('timer');
+function startTimer(seconds) {
+    const timerDisplay = document.getElementById('timerDisplay');
+    timerDisplay.classList.remove('hidden');
+    
     const interval = setInterval(() => {
-        const diff = (5 * 60 * 1000) - (Date.now() - lastClaim);
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        timerDisplay.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
         
-        if (diff <= 0) {
-            btn.disabled = false; 
-            btn.innerText = "CLAIM 0.0001 TON";
-            timerDiv.classList.add('hidden'); 
+        if (seconds <= 0) {
             clearInterval(interval);
-            const reminderText = "🚀 <b>It's time!</b>\n\nYour rocket is ready. Don't forget to claim it!";
-            sendTelegramMessage(reminderText);
-        } else {
-            btn.disabled = true; 
-            timerDiv.classList.remove('hidden');
-            const m = Math.floor(diff / 60000), s = Math.floor((diff % 60000) / 1000);
-            timerDiv.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-
-            // 10 soniya qolganida ogohlantirish yuborish
-            if (diff <= 10000 && !isNotificationSent) {
-                isNotificationSent = true;
-                const soonText = "⚠️ <b>Attention!</b>\n\nOnly 10 seconds left until your next claim! Get ready. 🚀";
-                sendTelegramMessage(soonText);
-            }
+            timerDisplay.classList.add('hidden');
+            document.getElementById('claimBtn').classList.remove('hidden');
+            triggerRocketAnimation(false);
         }
+        seconds--;
     }, 1000);
 }
 
-window.handleClaim = handleClaim;
-checkFirstTimeEntry();
+window.finalClaim = async () => {
+    const userRef = ref(db, 'users/' + userId);
+    const snap = await get(userRef);
+    if (snap.exists()) {
+        const data = snap.val();
+        const newBal = (data.balance || 0) + 0.00005;
+        
+        await update(userRef, {
+            balance: newBal,
+            isMining: false,
+            lastLaunch: null
+        });
+        
+        fuel = 0;
+        shield = 0;
+        isMining = false;
+        document.getElementById('claimBtn').classList.add('hidden');
+        updateUI();
+        loadUserData();
+        window.Telegram.WebApp.showAlert("Success! 0.00005 TON added.");
+    }
+};
+
+async function loadUserData() {
+    const userRef = ref(db, 'users/' + userId);
+    const snap = await get(userRef);
+    if (snap.exists()) {
+        const data = snap.val();
+        document.getElementById('balance').innerText = (data.balance || 0).toFixed(6) + " TON";
+        
+        if (data.isMining && data.lastLaunch) {
+            const elapsed = Math.floor((Date.now() - data.lastLaunch) / 1000);
+            const remaining = (10 * 60) - elapsed;
+            
+            if (remaining > 0) {
+                fuel = 100; shield = 100;
+                isMining = true;
+                updateUI();
+                triggerRocketAnimation(true);
+                startTimer(remaining);
+            } else {
+                document.getElementById('claimBtn').classList.remove('hidden');
+                fuel = 100; shield = 100;
+                updateUI();
+            }
+        }
+    }
+}
+
 loadUserData();
