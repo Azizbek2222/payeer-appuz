@@ -127,7 +127,7 @@ window.finalClaim = async () => {
     const snap = await get(userRef);
     if (snap.exists()) {
         const data = snap.val();
-        const newBal = (data.balance || 0) + 0.00005;
+        const newBal = (data.balance || 0) + 0.0001;
         
         await update(userRef, {
             balance: newBal,
